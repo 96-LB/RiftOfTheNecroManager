@@ -13,6 +13,10 @@ internal class FieldRef<V>(object instance, FieldInfo field) {
         return this;
     }
 
+    public override string ToString() {
+        return $"[{instance}].{field.Name} = [{Value}]";
+    }
+
     public static implicit operator V(FieldRef<V> fieldRef) {
         return fieldRef.Value;
     }

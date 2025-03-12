@@ -41,6 +41,9 @@
     <Reference Include="Google.Protobuf">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RiftOfTheNecroDancerOSTVolume1\RiftOfTheNecroDancer_Data\Managed\Google.Protobuf.dll</HintPath>
     </Reference>
+    <Reference Include="TicToc.Localization">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RiftOfTheNecroDancerOSTVolume1\RiftOfTheNecroDancer_Data\Managed\TicToc.Localization.dll</HintPath>
+    </Reference>
     <Reference Include="TicToc.ObjectPooling.Runtime">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RiftOfTheNecroDancerOSTVolume1\RiftOfTheNecroDancer_Data\Managed\TicToc.ObjectPooling.Runtime.dll</HintPath>
     </Reference>

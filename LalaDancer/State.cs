@@ -3,8 +3,7 @@
 namespace LalaDancer;
 
 
-internal static class State<K, V> where V : new()
-{
+internal static class State<K, V> where V : new() {
     private static readonly Dictionary<K, V> states = [];
 
     internal static V Of(K obj) {
