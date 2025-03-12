@@ -109,7 +109,6 @@ internal static class RREnemyControllerPatch {
             fmodTimeCapsule.BeatLengthInSeconds,
             shouldReturnEarliestTime: false
         );
-        Plugin.Log.LogInfo($"{fmodTimeCapsule.TrueBeatNumber} {fmodTimeCapsule.Time} {BeatmapPlayerPatch_Internal.GetTime(fmodTimeCapsule.TrueBeatNumber)}");
 
         foreach(RREnemy activeEnemy in ____activeEnemies) {
             if(!activeEnemy.ShouldQueueSounds() || activeEnemy.IsDying) {
@@ -301,7 +300,6 @@ internal static class RREnemyControllerPatch_Internal {
         }
         state.UnQueue(isFollowUp);
         
-        Plugin.Log.LogInfo($"Queueing for {enemy.DisplayName} ({enemy.EnemyId}) at {targetTrueBeatNumber} with delay {timeUntilNextBeat}");
         AudioManager instance = AudioManager.Instance;
         float laneNumber = (float)(enemy.TargetGridPosition.x - Mathf.Floor(tileGridAccessor.NumColumns / 2f));
         Guid guid = Guid.Empty;

@@ -18,11 +18,7 @@ internal static class BeatmapPlayerPatch {
     ) {
         BeatmapPlayerPatch_Internal.beatmap = beatmapToSet;
         BeatmapPlayerPatch_Internal.speedAdjustment = ____activeSpeedAdjustment;
-
-        Plugin.Log.LogWarning("Set beatmap to " + beatmapToSet.name);
-        Plugin.Log.LogWarning(beatmapToSet.bpm);
-        Plugin.Log.LogWarning(string.Join(", ", beatmapToSet.BeatTimings.Select(t => t.ToString()).ToArray()));
-        Plugin.Log.LogWarning("Speed adjustment is " + ____activeSpeedAdjustment);
+        Plugin.Log.LogInfo($"Set beatmap to {beatmapToSet.name} with speed adjustment {____activeSpeedAdjustment}");
     }
 }
 
