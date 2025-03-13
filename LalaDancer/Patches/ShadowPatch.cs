@@ -81,6 +81,10 @@ internal static class ShadowPatch_Initialize {
         Sprite ____otherBeatShadowSprite,
         Transform ____scalePointTransform
     ) {
+        if(!Config.MoreShadows.Enabled) {
+            return;
+        }
+
         var beatType = ShadowPatch_Common.GetBeatType(__instance.SpawnTrueBeatNumber);
         BeatState.Of(__instance).beat = beatType;
         ShadowPatch_Common.SetBeatSprite(
@@ -108,6 +112,10 @@ internal static class ShadowPatch_UpdateState {
         Sprite ____otherBeatShadowSprite,
         Transform ____scalePointTransform
     ) {
+        if(!Config.MoreShadows.Enabled) {
+            return;
+        }
+
         // prevent the original code from overwriting our shadow
         ____isOnBeat = __instance.NextActionRowTrueBeatNumber % 1f <= 0.05f || __instance.NextActionRowTrueBeatNumber % 1f >= 0.95f;
         ____isHalfBeat = __instance.NextActionRowTrueBeatNumber % 1f >= 0.45f && __instance.NextActionRowTrueBeatNumber % 1f <= 0.55f;
@@ -136,6 +144,10 @@ internal static class ShadowPatch_UpdateAnimations {
         SpriteRenderer ____monsterShadow,
         Transform ____scalePointTransform
     ) {
+        if(!Config.MoreShadows.Enabled) {
+            return;
+        }
+
         ShadowPatch_Common.FlipSprite(____monsterShadow, ____scalePointTransform);
     }
 }

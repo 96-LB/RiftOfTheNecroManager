@@ -50,7 +50,6 @@ internal class AudioData {
     }
 
     internal void SetLane(float laneNumber) {
-        
         foreach(Guid guid in new[] {
             first.HitAudioId, first.HitCryAudioId, first.MissAudioId, first.AttackAudioId,
             second.HitAudioId, second.HitCryAudioId, second.MissAudioId, second.AttackAudioId,
@@ -100,6 +99,10 @@ internal static class RREnemyControllerPatch {
         bool ____isPracticeMode,
         bool ____shouldQueueEnemyAttackAudio
     ) {
+        if(!Config.SfxPrediction.Enabled) {
+            return true;
+        }
+
         if(____isGameOver || ____stopQueueingEnemyAudio || ____activeEnemies.Count < 1) {
             return false;
         }
@@ -155,11 +158,15 @@ internal static class RREnemyControllerPatch {
     }
 
     [HarmonyPatch("TryUpdateAudioLaneNumbers")]
-    [HarmonyPostfix]
+    [HarmonyPostfix] // TODO: why is this postfix? do we do anything here?
     internal static void TryUpdateAudioLaneNumbers(
         RREnemy enemyToUpdate,
         IRRGridDataAccessor ____tileGridAccessor
     ) {
+        if(!Config.SfxPrediction.Enabled) {
+            return;
+        }
+        
         float laneNumber = enemyToUpdate.TargetGridPosition.x - Mathf.Floor(____tileGridAccessor.NumColumns / 2f);
         Audio.Of(enemyToUpdate.EnemyId).SetLane(laneNumber);
     }
@@ -170,6 +177,10 @@ internal static class RREnemyControllerPatch {
         string enemyInstanceId,
         ref bool __result
     ) {
+        if(!Config.SfxPrediction.Enabled) {
+            return true;
+        }
+        
         var audio = Audio.Of(enemyInstanceId);
         __result = audio.first.HitAudioId != Guid.Empty || audio.first.HitCryAudioId != Guid.Empty;
         return false;
@@ -194,6 +205,10 @@ internal static class RREnemyControllerPatch {
     internal static bool TryProcessHitEnemySoundReactions(
         RREnemy enemy
     ) {
+        if(!Config.SfxPrediction.Enabled) {
+            return true;
+        }
+        
         var audio = Audio.Of(enemy.EnemyId);
 
         if(audio.first.HitAudioId == Guid.Empty && audio.first.HitCryAudioId == Guid.Empty) {
@@ -215,6 +230,10 @@ internal static class RREnemyControllerPatch {
         List<RREnemy> ____activeEnemies,
         IRRGridDataAccessor ____tileGridAccessor
     ) {
+        if(!Config.SfxPrediction.Enabled) {
+            return true;
+        }
+
         if(____stopQueueingEnemyAudio) {
             return false;
         }
@@ -251,13 +270,13 @@ internal static class RREnemyControllerPatch {
         RREnemy enemy
     ) {
         Audio.Of(enemy.EnemyId).special = new();
-        return false;
+        return !Config.SfxPrediction.Enabled;
     }
 
     [HarmonyPatch("HandleEnemyActionRowSoundQueueingRequest")]
     [HarmonyPrefix]
     internal static bool HandleEnemyActionRowSoundQueueingRequest() {
-        return false;
+        return !Config.SfxPrediction.Enabled;
     }
 }
 

@@ -139,11 +139,8 @@ public class RiftModsSettingsController : MonoBehaviour {
         InputController.SetSelectionIndex(0);
         OptionsGroup.SetSelectionIndex(0);
 
-        Plugin.Log.LogMessage("meeerp");
         foreach(var (_, controller, handler) in buttons) {
-            Plugin.Log.LogMessage(controller.name);
             if(controller) {
-                Plugin.Log.LogWarning(controller.name);
                 controller.OnClose += handler;
             }
         }

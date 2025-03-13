@@ -20,7 +20,6 @@ public class Plugin : BaseUnityPlugin {
     internal static Sprite TwoThirdBeat;
     internal static Sprite ThreeQuarterBeat;
 
-
     private Sprite MakeSprite(byte[] data) {
         Texture2D tex = new(0, 0);
         tex.LoadImage(data);
@@ -38,6 +37,8 @@ public class Plugin : BaseUnityPlugin {
         Harmony harmony = new(GUID);
         harmony.PatchAll();
         
+        LalaDancer.Config.Initialize(Config);
+
         QuarterBeat = MakeSprite(Properties.Resources.QuarterBeat);
         ThirdBeat = MakeSprite(Properties.Resources.ThirdBeat);
         TwoThirdBeat = MakeSprite(Properties.Resources.TwoThirdBeat);
@@ -47,21 +48,6 @@ public class Plugin : BaseUnityPlugin {
         foreach(var x in harmony.GetPatchedMethods()) {
             Log.LogInfo($"Patched {x}.");
         }
-        
-        var z = Config.Bind("General", "Enable", true, "Enable the mod.");
-        var zz = Config.Bind("General2", "Enable again", true, "Enable the mod again.");
-        var zzz = Config.Bind("General", "Disable", false, "Disable the mod");
-        var zzzz = Config.Bind("General", "Generic", "Generic", "Generic Parameter");
 
-
-        Config.Bind("newtests", "String Test", "foo", new ConfigDescription("test", new AcceptableValueList<string>("foo", "bar", "baz")));
-        Config.Bind("newtests", "Enum Test", TestEnum.FooEnum, "test");
-        Config.Bind("newtests", "XXXXXXXXX", "X", new ConfigDescription("test", new AcceptableValueList<string>("X")));
-    }
-
-    private enum TestEnum {
-        FooEnum,
-        BarEnum,
-        BazEnum
     }
 }

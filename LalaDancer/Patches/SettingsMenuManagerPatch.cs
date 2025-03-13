@@ -102,7 +102,6 @@ internal static class SettingsMenuManagerPatch {
         state.HandleModsSettingsClosed = HandleModsSettingsClosed;
 
         Plugin.Log.LogInfo("Created mods menu button.");
-        DebugUtil.PrintAllChildren(__instance, true, true);
     }
 
     [HarmonyPostfix]
