@@ -43,10 +43,11 @@ internal static class BeatmapPlayerPatch_Internal {
         }
 
         // this is a > in the original message but this causes a crash on the last beat
+        // also the +1 on the excess line was a -1 in the original function (also bugged)
         if(beat >= beatmap.BeatTimings.Count - 1) {
-            double bpm = beatmap.BeatTimings[^1] - beatmap.BeatTimings[^2];
-            float excess = beat - beatmap.BeatTimings.Count - 1;
-            return (float)(beatmap.BeatTimings[^1] + excess * bpm);
+            double beatLength = beatmap.BeatTimings[^1] - beatmap.BeatTimings[^2];
+            float excess = beat - beatmap.BeatTimings.Count + 1;
+            return (float)(beatmap.BeatTimings[^1] + excess * beatLength);
         }
 
         // this looks different but is the same
