@@ -31,12 +31,12 @@ internal static class SettingsMenuManagerPatch {
         P __instance,
         OptionsScreenInputController ____inputController,
         GameObject ____contentParent,
-        TextButtonOption ____backButton,
+        TextButtonOption ____accessibilityButton,
         RiftAccessibilitySettingsController ____riftAccessibilitySettingsController
     ) {
-        // the back button is our template for text buttons
-        SettingsMenuManagerPatch_Internal.textButtonTemplate = ____backButton;
-        if(!____backButton) {
+        // the accessibility button is our template for text buttons
+        SettingsMenuManagerPatch_Internal.textButtonTemplate = ____accessibilityButton;
+        if(!____accessibilityButton) {
             Plugin.Log.LogError("Failed to find back button on settings menu. Aborting mod settings menu creation.");
             return;
         }
@@ -50,7 +50,7 @@ internal static class SettingsMenuManagerPatch {
         var controller = RiftModsSettingsController.Create(____riftAccessibilitySettingsController);
         var HandleOpenModsSettings = SettingsMenuManagerPatch_Internal.HandleOpenModsSettings(____contentParent, controller);
         var HandleModsSettingsClosed = SettingsMenuManagerPatch_Internal.HandleModsSettingsClosed(____contentParent, controller);
-        var modsButton = Object.Instantiate(____backButton, ____backButton.transform.parent);
+        var modsButton = Object.Instantiate(____accessibilityButton, ____accessibilityButton.transform.parent);
         modsButton.name = "TextButton - Mods";
         modsButton.OnSubmit += HandleOpenModsSettings;
 

@@ -67,9 +67,7 @@ public class RiftModsSettingsController : MonoBehaviour {
 
         var plugins = Chainloader.PluginInfos.Values.OrderBy(x => x.Metadata.Name).ToArray();
         foreach(var plugin in plugins) {
-            for(int i = 0; i < 13; i++) {
-                controller.MakeOption(plugin);
-            }
+            controller.MakeOption(plugin);
         }
         
         var title = controller.OptionsObj.transform.Find("Menu_Settings_TitleText");
