@@ -1,68 +1,169 @@
-﻿using Shared.DLC;
+﻿using BepInEx;
+using BepInEx.Bootstrap;
+using LalaDancer.Patches;
+using Shared;
 using Shared.MenuOptions;
-using Shared.PlayerData;
 using Shared.Title;
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using TicToc.Localization.Components;
+using TMPro;
 using UnityEngine;
 
 namespace LalaDancer.Scripts;
 
+using Action = System.Action;
+using ButtonHandler = (SelectableOption button, RiftGenericModSettingsController controller, System.Action handler);
+
 public class RiftModsSettingsController : MonoBehaviour {
-    [Header("Menu Buttons")]
     [SerializeField]
-    private GameObject _contentParent;
-
-    [SerializeField]
-    private OptionsScreenInputController _inputController;
+    private GameObject optionsObj;
 
     [SerializeField]
-    private List<TextButtonOption> modsButtons;
+    private OptionsScreenInputController inputController;
 
     [SerializeField]
-    private TextButtonOption _backButton;
+    private ScrollableSelectableOptionGroup optionsGroup;
 
-    private SettingsMenuManager _settingsMenuManager;
-
+    [SerializeField]
+    private List<ButtonHandler> buttons;
+    
     public event Action OnClose;
 
-    public event Action OnResetSettings;
+    public bool Initialized { get; private set; }
+
+    public GameObject OptionsObj => optionsObj;
+
+    public ScrollableSelectableOptionGroup OptionsGroup => optionsGroup;
+
+    public OptionsScreenInputController InputController => inputController;
+
+
+    public static RiftModsSettingsController Create(RiftAccessibilitySettingsController other) {
+        var copy = Instantiate(other, other.transform.parent);
+        copy.gameObject.SetActive(false);
+        copy.gameObject.name = "ModsSettingsScreen";
+
+        var controller = copy.gameObject.AddComponent<RiftModsSettingsController>();
+        controller.Initialized = true;
+        controller.optionsObj = copy.Field<GameObject>("_mainOptionsParent");
+        controller.optionsGroup = copy.Field<ScrollableSelectableOptionGroup>("_scrollableSelectableOptionGroup");
+        controller.inputController = copy.Field<OptionsScreenInputController>("_optionsScreenInputController");
+        controller.buttons = [];
+        DestroyImmediate(copy); // the calls to DestroyImmediate are needed here because we instantiate a copy later this frame
+
+        foreach(var opt in controller.InputController.Field<List<SelectableOption>>("_options").Value) {
+            if(opt.gameObject != controller.OptionsGroup.gameObject) {
+                DestroyImmediate(opt.gameObject);
+            }
+        }
+        foreach(var opt in controller.OptionsGroup.Field<List<SelectableOption>>("_options").Value) {
+            DestroyImmediate(opt.gameObject);
+        }
+        controller.InputController.RemoveAllOptions();
+        controller.OptionsGroup.RemoveAllOptions();
+        controller.InputController.TryAddOption(controller.OptionsGroup);
+
+        var plugins = Chainloader.PluginInfos.Values.OrderBy(x => x.Metadata.Name).ToArray();
+        foreach(var plugin in plugins) {
+            for(int i = 0; i < 13; i++) {
+                controller.MakeOption(plugin);
+            }
+        }
+        
+        var title = controller.OptionsObj.transform.Find("Menu_Settings_TitleText");
+        if(title.TryGetComponent(out TMP_Text text)) {
+            text.SetText("MODS");
+        }
+        if(title.TryGetComponent(out BaseLocalizer localizer)) {
+            Destroy(localizer); // the localizer will overwrite our text changes
+        }
+
+        return controller;
+    }
+
+    public void MakeOption(PluginInfo plugin) {
+        var controller = RiftGenericModSettingsController.Create(this, plugin);
+        void HandleOpenModSettings() {
+            Debug.LogError("Opening mod settings for " + plugin.Metadata.Name);
+            OptionsObj.SetActive(false);
+            InputController.IsInputDisabled = true;
+            controller.gameObject.SetActive(true);
+        }
+        void HandleModSettingsClosed() {
+            Debug.LogError("Closing menu!");
+            StartCoroutine(CloseModSettingsRoutine(controller));
+        }
+        
+        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.textButtonTemplate, true);
+        button.name = $"TextButton - Mod - {plugin.Metadata.Name}";
+        button.OnSubmit += HandleOpenModSettings;
+
+        foreach(var label in button.Field<TMP_Text[]>("_textLabels").Value) {
+            // the localizer will try to change the text we set
+            // remove it so this doesn't happen
+            if(label.TryGetComponent(out BaseLocalizer localizer)) {
+                Destroy(localizer);
+            }
+            label.SetText(plugin.Metadata.Name);
+        }
+
+        buttons.Add((button, controller, HandleModSettingsClosed));
+    }
+
+    private IEnumerator CloseModSettingsRoutine(RiftGenericModSettingsController controller) {
+        yield return null;
+        controller.gameObject.SetActive(false);
+        InputController.IsInputDisabled = false;
+        OptionsObj.SetActive(true);
+    }
 
     private void Awake() {
-        if((bool)SettingsAccessor.Instance) {
-            _settingsMenuManager = SettingsAccessor.Instance.RequestSettingsMenu();
+        if(!Initialized) {
+            throw new UnityException("RiftModsSettingsController should be created using static Create method.");
         }
 
-        if((bool)_inputController) {
-            _inputController.OnCloseInput += OnCancel;
-        }
-
-        if((bool)_backButton) {
-            _backButton.OnSubmit += OnCancel;
+        if(InputController) {
+            InputController.OnCloseInput += HandleCloseInput;
         }
     }
 
     private void OnDestroy() {
-        if((bool)_inputController) {
-            _inputController.OnCloseInput -= OnCancel;
-        }
-
-        if((bool)_backButton) {
-            _backButton.OnSubmit -= OnCancel;
+        if(InputController) {
+            InputController.OnCloseInput -= HandleCloseInput;
         }
     }
 
     private void OnEnable() {
-        _contentParent.SetActive(value: true);
+        OptionsObj.SetActive(value: true);
+        InputController.IsInputDisabled = false;
+        InputController.SetSelectionIndex(0);
+        OptionsGroup.SetSelectionIndex(0);
+
+        Plugin.Log.LogMessage("meeerp");
+        foreach(var (_, controller, handler) in buttons) {
+            Plugin.Log.LogMessage(controller.name);
+            if(controller) {
+                Plugin.Log.LogWarning(controller.name);
+                controller.OnClose += handler;
+            }
+        }
     }
 
-    private void OnCancel() {
-        HandleCloseInput();
+    private void OnDisable() {
+        OptionsObj.SetActive(value: false);
+        InputController.IsInputDisabled = true;
+
+        foreach(var (_, controller, handler) in buttons) {
+            if(controller) {
+                controller.OnClose -= handler;
+            }
+        }
     }
 
     private void HandleCloseInput() {
         OnClose?.Invoke();
-        _inputController.SetSelectionIndex(0);
+        InputController.SetSelectionIndex(0);
     }
 }

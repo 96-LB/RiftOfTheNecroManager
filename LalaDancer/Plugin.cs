@@ -46,5 +46,9 @@ public class Plugin : BaseUnityPlugin {
         foreach(var x in harmony.GetPatchedMethods()) {
             Log.LogInfo($"Patched {x}.");
         }
+        
+        var z = Config.Bind("General", "Enable", true, "Enable the mod.");
+        var zz = Config.Bind("General2", "Enable again", true, "Enable the mod again.");
+        var zzz = Config.Bind("General", "Disable", false, "Disable the mod");
     }
 }
