@@ -35,16 +35,30 @@ internal static class SettingsMenuManagerPatch {
         RiftAccessibilitySettingsController ____riftAccessibilitySettingsController
     ) {
         // the accessibility button is our template for text buttons
-        SettingsMenuManagerPatch_Internal.textButtonTemplate = ____accessibilityButton;
+        SettingsMenuManagerPatch_Internal.textButtonPrefab = ____accessibilityButton;
         if(!____accessibilityButton) {
             Plugin.Log.LogError("Failed to find back button on settings menu. Aborting mod settings menu creation.");
             return;
         }
 
-        // not choosing any specific templates for the other ones
-        SettingsMenuManagerPatch_Internal.toggleTemplate = ____riftAccessibilitySettingsController.GetComponentInChildren<ToggleOption>();
-        if(!SettingsMenuManagerPatch_Internal.toggleTemplate) {
+        // not choosing any specific template; just search the hierarchy
+        SettingsMenuManagerPatch_Internal.togglePrefab = ____riftAccessibilitySettingsController.GetComponentInChildren<ToggleOption>();
+        if(!SettingsMenuManagerPatch_Internal.togglePrefab) {
             Plugin.Log.LogError("Failed to find toggle option in accessibility settings menu. Aborting mod settings menu creation.");
+            return;
+        }
+
+        // not choosing any specific template; just search the hierarchy
+        SettingsMenuManagerPatch_Internal.carouselPrefab = ____riftAccessibilitySettingsController.GetComponentInChildren<CarouselOptionGroup>();
+        if(!SettingsMenuManagerPatch_Internal.carouselPrefab) {
+            Plugin.Log.LogError("Failed to find carousel option in accessibility settings menu. Aborting mod settings menu creation.");
+            return;
+        }
+
+        // steal a prefab from the accessibility menu
+        SettingsMenuManagerPatch_Internal.carouselOptionPrefab = ____riftAccessibilitySettingsController.Field<CarouselSubOption>("_backgroundDetailCarouselOptionPrefab");
+        if(!SettingsMenuManagerPatch_Internal.carouselOptionPrefab) {
+            Plugin.Log.LogError("Failed to load carousel sub-option prefab from accessibility settings menu. Aborting mod settings menu creation.");
             return;
         }
 
@@ -112,8 +126,10 @@ internal static class SettingsMenuManagerPatch {
 
 internal static class SettingsMenuManagerPatch_Internal {
 
-    internal static TextButtonOption textButtonTemplate;
-    internal static ToggleOption toggleTemplate;
+    internal static TextButtonOption textButtonPrefab;
+    internal static ToggleOption togglePrefab;
+    internal static CarouselOptionGroup carouselPrefab;
+    internal static CarouselSubOption carouselOptionPrefab;
 
     internal static Action HandleOpenModsSettings(
         GameObject contentParent,

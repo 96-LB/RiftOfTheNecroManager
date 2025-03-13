@@ -5,6 +5,7 @@ using Shared.MenuOptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TicToc.Localization.Components;
 using TMPro;
 using UnityEngine;
@@ -27,19 +28,19 @@ public class RiftGenericModSettingsController : MonoBehaviour {
 
     [SerializeField]
     private List<SelectableOption> buttons;
-    
+
     public event Action OnClose;
-    
+
     public bool Initialized { get; private set; }
 
     public PluginInfo PluginInfo { get; private set; }
-    
+
     public GameObject OptionsObj => optionsObj;
 
     public ScrollableSelectableOptionGroup OptionsGroup => optionsGroup;
-    
+
     public OptionsScreenInputController InputController => inputController;
-    
+
 
     public static RiftGenericModSettingsController Create(RiftModsSettingsController other, PluginInfo plugin) {
         var copy = Instantiate(other, other.transform.parent);
@@ -56,7 +57,7 @@ public class RiftGenericModSettingsController : MonoBehaviour {
         Destroy(copy);
 
         controller.OptionsGroup.RemoveAllOptions(true);
-        
+
         var categories = plugin.Instance.Config.GroupBy(
             x => x.Key.Section,
             x => x
@@ -80,7 +81,7 @@ public class RiftGenericModSettingsController : MonoBehaviour {
     }
 
     public void MakeHeader(string category) {
-        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.textButtonTemplate, true);
+        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.textButtonPrefab, true);
         button.name = $"Label - Mod - {PluginInfo.Metadata.Name} - {category}";
 
         foreach(var label in button.Field<TMP_Text[]>("_textLabels").Value) {
@@ -100,21 +101,25 @@ public class RiftGenericModSettingsController : MonoBehaviour {
     public void MakeOption(ConfigDefinition key, ConfigEntryBase value) {
         SelectableOption button = value switch {
             ConfigEntry<bool> val => MakeToggleOption(key, val),
-            ConfigEntry<Enum> val => MakeCarouselOption(key, val),
+            ConfigEntry<string> val => MakeCarouselOption(key, val),
             _ => null
         };
+        if(!button && value.SettingType.IsEnum) {
+            MakeCarouselOption(key, value, value.SettingType.GetEnumNames());
+        }
+
         if(button) {
             buttons.Add(button);
         }
     }
 
     public ToggleOption MakeToggleOption(ConfigDefinition key, ConfigEntry<bool> value) {
-        var button = (ToggleOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.toggleTemplate, true);
+        var button = (ToggleOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.togglePrefab, true);
         button.isOn = value.Value;
-        button.name = $"SwitchOption - Mod - {PluginInfo.Metadata.Name} - {key.Section}.{key.Key}";
+        button.name = $"ToggleOption - Mod - {PluginInfo.Metadata.Name} - {key.Section}.{key.Key}";
         button.OnValueChanged += (isOn) => {
             value.Value = isOn;
-            Debug.LogWarning($"Flipped {key.Key} to {isOn}");
+            Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {isOn}.");
         };
 
         // the localizer will try to change the text we set
@@ -127,19 +132,58 @@ public class RiftGenericModSettingsController : MonoBehaviour {
 
         return button;
     }
+    
+    public CarouselOptionGroup MakeCarouselOption(ConfigDefinition key, ConfigEntry<Enum> value) {
+        if(value.Description.AcceptableValues is AcceptableValueList<string> vals) {
+            return MakeCarouselOption(key, value, vals.AcceptableValues);
+        } else {
+            return null;
+        }
+    }
 
-    public CarouselSubOption MakeCarouselOption(ConfigDefinition key, ConfigEntry<bool> value) {
-        var button = (ToggleOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.carouselTemplate, true);
-        button.isOn = value.Value;
-        button.name = $"SwitchOption - Mod - {PluginInfo.Metadata.Name} - {key.Section}.{key.Key}";
-        button.OnValueChanged += (isOn) => {
-            value.Value = isOn;
-            Debug.LogWarning($"Flipped {key.Key} to {isOn}");
+    public CarouselOptionGroup MakeCarouselOption(ConfigDefinition key, ConfigEntry<string> value) {
+        if(value.Description.AcceptableValues is AcceptableValueList<string> vals) {
+            return MakeCarouselOption(key, value, vals.AcceptableValues);
+        } else {
+            return null;
+        }
+    }
+
+    public CarouselOptionGroup MakeCarouselOption(ConfigDefinition key, ConfigEntryBase value, string[] options) {
+        var button = (CarouselOptionGroup)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.carouselPrefab, true);
+        button.name = $"CarouselOption - Mod - {PluginInfo.Metadata.Name} - {key.Section}.{key.Key}";
+        button.RemoveAllOptions(true);
+        var selectedIndex = 0;
+        foreach(var option in options) {
+            if(value.Description.AcceptableValues?.IsValid(option) ?? true) {
+                var subOption = Instantiate(SettingsMenuManagerPatch_Internal.carouselOptionPrefab, button.Content);
+                subOption.name = $"CarouselSubOption - Mod - {PluginInfo.Metadata.Name} - {key.Section}.{key.Key} - {option}";
+                subOption.SetPrimaryTextLabel(option);
+                button.TryAddOption(subOption);
+                if(string.Equals(option, value.GetSerializedValue(), StringComparison.InvariantCultureIgnoreCase)) {
+                    selectedIndex = button.NumberOfOptions - 1;
+                }
+            }
+        }
+
+        // only generate the carousel if there are multiple options to choose from
+        if(button.NumberOfOptions < 2) {
+            button.RemoveAllOptions(true);
+            Destroy(button.gameObject);
+            return null;
+        }
+
+        button.SetSelectionIndex(selectedIndex);
+        button.FlagAsExternallyInitialized();
+
+        button.OnSelectedIndexChanged += (index) => {
+            value.SetSerializedValue(options[index]);
+            Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {index} ({options[index]})");
         };
 
         // the localizer will try to change the text we set
         // remove it so this doesn't happen
-        var label = button.Field<TMP_Text>("_labelText").Value;
+        var label = button.Field<TMP_Text>("_title").Value;
         if(label.TryGetComponent(out BaseLocalizer localizer)) {
             Destroy(localizer);
         }
@@ -147,6 +191,7 @@ public class RiftGenericModSettingsController : MonoBehaviour {
 
         return button;
     }
+
 
     private void Awake() {
         if(!Initialized) {

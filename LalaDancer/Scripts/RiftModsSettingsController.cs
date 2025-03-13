@@ -94,7 +94,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             StartCoroutine(CloseModSettingsRoutine(controller));
         }
         
-        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.textButtonTemplate, true);
+        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.textButtonPrefab, true);
         button.name = $"TextButton - Mod - {plugin.Metadata.Name}";
         button.OnSubmit += HandleOpenModSettings;
 

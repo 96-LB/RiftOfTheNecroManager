@@ -52,5 +52,16 @@ public class Plugin : BaseUnityPlugin {
         var zz = Config.Bind("General2", "Enable again", true, "Enable the mod again.");
         var zzz = Config.Bind("General", "Disable", false, "Disable the mod");
         var zzzz = Config.Bind("General", "Generic", "Generic", "Generic Parameter");
+
+
+        Config.Bind("newtests", "String Test", "foo", new ConfigDescription("test", new AcceptableValueList<string>("foo", "bar", "baz")));
+        Config.Bind("newtests", "Enum Test", TestEnum.FooEnum, "test");
+        Config.Bind("newtests", "XXXXXXXXX", "X", new ConfigDescription("test", new AcceptableValueList<string>("X")));
+    }
+
+    private enum TestEnum {
+        FooEnum,
+        BarEnum,
+        BazEnum
     }
 }
