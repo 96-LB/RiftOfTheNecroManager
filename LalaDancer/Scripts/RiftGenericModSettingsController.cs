@@ -7,6 +7,7 @@ using Shared.MenuOptions;
 using Shared.Title;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using TicToc.Localization.Components;
 using TMPro;
 using UnityEngine;
@@ -83,6 +84,33 @@ public class RiftGenericModSettingsController : MonoBehaviour {
     public void MakeHeader(string category) { }
 
     public void MakeOption(ConfigDefinition key, ConfigEntryBase value) {
+        buttons.Add(value switch {
+            ConfigEntry<bool> val => MakeSwitchOption(key, val),
+            _ => MakeNullOption(key)
+        });
+    }
+
+    public ToggleOption MakeSwitchOption(ConfigDefinition key, ConfigEntry<bool> value) {
+        var button = (ToggleOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.toggleTemplate, true);
+        button.isOn = value.Value;
+        button.name = $"SwitchOption - Mod - {PluginInfo.Metadata.Name} - {key.Section}.{key.Key}";
+        button.OnValueChanged += (isOn) => {
+            value.Value = isOn;
+            Debug.LogWarning($"Flipped {key.Key} to {isOn}");
+        };
+
+        // the localizer will try to change the text we set
+        // remove it so this doesn't happen
+        var label = button.Field<TMP_Text>("_labelText").Value;
+        if(label.TryGetComponent(out BaseLocalizer localizer)) {
+            Destroy(localizer);
+        }
+        label.SetText(key.Key);
+
+        return button;
+    }
+
+    public TextButtonOption MakeNullOption(ConfigDefinition key) {
         var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.textButtonTemplate, true);
         button.name = $"TextButton - Mod - {PluginInfo.Metadata.Name} - {key.Section}.{key.Key}";
         button.OnSubmit += () => {
@@ -97,9 +125,10 @@ public class RiftGenericModSettingsController : MonoBehaviour {
             }
             label.SetText(key.Key);
         }
-        
-        buttons.Add(button);
+
+        return button;
     }
+
 
     private void Awake() {
         if(!Initialized) {

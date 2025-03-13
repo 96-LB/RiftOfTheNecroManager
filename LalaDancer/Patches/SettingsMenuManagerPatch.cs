@@ -41,6 +41,13 @@ internal static class SettingsMenuManagerPatch {
             return;
         }
 
+        // not choosing any specific templates for the other ones
+        SettingsMenuManagerPatch_Internal.toggleTemplate = ____riftAccessibilitySettingsController.GetComponentInChildren<ToggleOption>();
+        if(!SettingsMenuManagerPatch_Internal.toggleTemplate) {
+            Plugin.Log.LogError("Failed to find toggle option in accessibility settings menu. Aborting mod settings menu creation.");
+            return;
+        }
+
         // the accessibility menu is our template for the new menus
         if(!____riftAccessibilitySettingsController) {
             Plugin.Log.LogError("Failed to find accessibility settings menu. Aborting mod settings menu creation.");
@@ -81,6 +88,7 @@ internal static class SettingsMenuManagerPatch {
         state.HandleModsSettingsClosed = HandleModsSettingsClosed;
 
         Plugin.Log.LogInfo("Created mods menu button.");
+        DebugUtil.PrintAllChildren(__instance, true, true);
     }
 
     [HarmonyPostfix]
@@ -105,6 +113,7 @@ internal static class SettingsMenuManagerPatch {
 internal static class SettingsMenuManagerPatch_Internal {
 
     internal static TextButtonOption textButtonTemplate;
+    internal static ToggleOption toggleTemplate;
     
 
     internal static Action HandleOpenModsSettings(

@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
@@ -50,5 +51,6 @@ public class Plugin : BaseUnityPlugin {
         var z = Config.Bind("General", "Enable", true, "Enable the mod.");
         var zz = Config.Bind("General2", "Enable again", true, "Enable the mod again.");
         var zzz = Config.Bind("General", "Disable", false, "Disable the mod");
+        var zzzz = Config.Bind("General", "Generic", "Generic", "Generic Parameter");
     }
 }
