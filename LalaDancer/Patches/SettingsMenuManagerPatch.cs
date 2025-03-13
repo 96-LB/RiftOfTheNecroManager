@@ -114,7 +114,6 @@ internal static class SettingsMenuManagerPatch_Internal {
 
     internal static TextButtonOption textButtonTemplate;
     internal static ToggleOption toggleTemplate;
-    
 
     internal static Action HandleOpenModsSettings(
         GameObject contentParent,

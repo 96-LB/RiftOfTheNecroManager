@@ -1,19 +1,17 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using Google.Protobuf.WellKnownTypes;
 using LalaDancer.Patches;
-using Shared;
 using Shared.MenuOptions;
-using Shared.Title;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using TicToc.Localization.Components;
 using TMPro;
 using UnityEngine;
 
 namespace LalaDancer.Scripts;
 
+using static UnityEngine.UIElements.StylePropertyAnimationSystem;
 using Action = System.Action;
 
 public class RiftGenericModSettingsController : MonoBehaviour {
@@ -81,16 +79,36 @@ public class RiftGenericModSettingsController : MonoBehaviour {
         return controller;
     }
 
-    public void MakeHeader(string category) { }
+    public void MakeHeader(string category) {
+        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.textButtonTemplate, true);
+        button.name = $"Label - Mod - {PluginInfo.Metadata.Name} - {category}";
 
-    public void MakeOption(ConfigDefinition key, ConfigEntryBase value) {
-        buttons.Add(value switch {
-            ConfigEntry<bool> val => MakeSwitchOption(key, val),
-            _ => MakeNullOption(key)
-        });
+        foreach(var label in button.Field<TMP_Text[]>("_textLabels").Value) {
+            // the localizer will try to change the text we set
+            // remove it so this doesn't happen
+            if(label.TryGetComponent(out BaseLocalizer localizer)) {
+                Destroy(localizer);
+            }
+            label.SetText(category);
+            label.fontStyle |= FontStyles.Italic;
+        }
+
+        OptionsGroup.RemoveOption(button);
+        Destroy(button); // keeps the GameObject, but not the SelectableOption
     }
 
-    public ToggleOption MakeSwitchOption(ConfigDefinition key, ConfigEntry<bool> value) {
+    public void MakeOption(ConfigDefinition key, ConfigEntryBase value) {
+        SelectableOption button = value switch {
+            ConfigEntry<bool> val => MakeToggleOption(key, val),
+            ConfigEntry<Enum> val => MakeCarouselOption(key, val),
+            _ => null
+        };
+        if(button) {
+            buttons.Add(button);
+        }
+    }
+
+    public ToggleOption MakeToggleOption(ConfigDefinition key, ConfigEntry<bool> value) {
         var button = (ToggleOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.toggleTemplate, true);
         button.isOn = value.Value;
         button.name = $"SwitchOption - Mod - {PluginInfo.Metadata.Name} - {key.Section}.{key.Key}";
@@ -110,25 +128,25 @@ public class RiftGenericModSettingsController : MonoBehaviour {
         return button;
     }
 
-    public TextButtonOption MakeNullOption(ConfigDefinition key) {
-        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.textButtonTemplate, true);
-        button.name = $"TextButton - Mod - {PluginInfo.Metadata.Name} - {key.Section}.{key.Key}";
-        button.OnSubmit += () => {
-            Debug.LogWarning("Mod Option: " + key.Section + "." + key.Key);
+    public CarouselSubOption MakeCarouselOption(ConfigDefinition key, ConfigEntry<bool> value) {
+        var button = (ToggleOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.carouselTemplate, true);
+        button.isOn = value.Value;
+        button.name = $"SwitchOption - Mod - {PluginInfo.Metadata.Name} - {key.Section}.{key.Key}";
+        button.OnValueChanged += (isOn) => {
+            value.Value = isOn;
+            Debug.LogWarning($"Flipped {key.Key} to {isOn}");
         };
 
-        foreach(var label in button.Field<TMP_Text[]>("_textLabels").Value) {
-            // the localizer will try to change the text we set
-            // remove it so this doesn't happen
-            if(label.TryGetComponent(out BaseLocalizer localizer)) {
-                Destroy(localizer);
-            }
-            label.SetText(key.Key);
+        // the localizer will try to change the text we set
+        // remove it so this doesn't happen
+        var label = button.Field<TMP_Text>("_labelText").Value;
+        if(label.TryGetComponent(out BaseLocalizer localizer)) {
+            Destroy(localizer);
         }
+        label.SetText(key.Key);
 
         return button;
     }
-
 
     private void Awake() {
         if(!Initialized) {
