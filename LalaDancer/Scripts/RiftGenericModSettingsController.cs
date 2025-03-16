@@ -5,15 +5,12 @@ using Shared.MenuOptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using TicToc.Localization.Components;
 using TMPro;
 using UnityEngine;
 
 namespace LalaDancer.Scripts;
 
-using static UnityEngine.UIElements.StylePropertyAnimationSystem;
-using Action = System.Action;
 
 public class RiftGenericModSettingsController : MonoBehaviour {
 
@@ -84,7 +81,7 @@ public class RiftGenericModSettingsController : MonoBehaviour {
         var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.textButtonPrefab, true);
         button.name = $"Label - Mod - {PluginInfo.Metadata.Name} - {category}";
 
-        foreach(var label in button.Field<TMP_Text[]>("_textLabels").Value) {
+        foreach(var label in button._textLabels) {
             // the localizer will try to change the text we set
             // remove it so this doesn't happen
             if(label.TryGetComponent(out BaseLocalizer localizer)) {
@@ -124,7 +121,7 @@ public class RiftGenericModSettingsController : MonoBehaviour {
 
         // the localizer will try to change the text we set
         // remove it so this doesn't happen
-        var label = button.Field<TMP_Text>("_labelText").Value;
+        var label = button._labelText;
         if(label.TryGetComponent(out BaseLocalizer localizer)) {
             Destroy(localizer);
         }
@@ -183,7 +180,7 @@ public class RiftGenericModSettingsController : MonoBehaviour {
 
         // the localizer will try to change the text we set
         // remove it so this doesn't happen
-        var label = button.Field<TMP_Text>("_title").Value;
+        var label = button._title;
         if(label.TryGetComponent(out BaseLocalizer localizer)) {
             Destroy(localizer);
         }
@@ -191,9 +188,8 @@ public class RiftGenericModSettingsController : MonoBehaviour {
 
         return button;
     }
-
-
-    private void Awake() {
+    
+    protected void Awake() {
         if(!Initialized) {
             throw new UnityException("RiftModsSettingsController should be created using static Create method.");
         }
@@ -203,25 +199,25 @@ public class RiftGenericModSettingsController : MonoBehaviour {
         }
     }
 
-    private void OnDestroy() {
+    protected void OnDestroy() {
         if(InputController) {
             InputController.OnCloseInput -= HandleCloseInput;
         }
     }
 
-    private void OnEnable() {
+    protected void OnEnable() {
         OptionsObj.SetActive(value: true);
         InputController.IsInputDisabled = false;
         InputController.SetSelectionIndex(0);
         OptionsGroup.SetSelectionIndex(0);
     }
 
-    private void OnDisable() {
+    protected void OnDisable() {
         OptionsObj.SetActive(value: false);
         inputController.IsInputDisabled = true;
     }
 
-    private void HandleCloseInput() {
+    protected void HandleCloseInput() {
         OnClose?.Invoke();
         InputController.SetSelectionIndex(0);
     }

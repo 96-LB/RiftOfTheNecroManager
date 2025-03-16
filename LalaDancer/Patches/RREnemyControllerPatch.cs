@@ -158,7 +158,7 @@ internal static class RREnemyControllerPatch {
     }
 
     [HarmonyPatch("TryUpdateAudioLaneNumbers")]
-    [HarmonyPostfix] // TODO: why is this postfix? do we do anything here?
+    [HarmonyPostfix]
     internal static void TryUpdateAudioLaneNumbers(
         RREnemy enemyToUpdate,
         IRRGridDataAccessor ____tileGridAccessor

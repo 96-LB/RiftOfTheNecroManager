@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
@@ -48,6 +47,5 @@ public class Plugin : BaseUnityPlugin {
         foreach(var x in harmony.GetPatchedMethods()) {
             Log.LogInfo($"Patched {x}.");
         }
-
     }
 }

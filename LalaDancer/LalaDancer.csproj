@@ -26,12 +26,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RiftOfTheNecroDancerOSTVolume1\RiftOfTheNecroDancer_Data\Managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RiftOfTheNecroDancerOSTVolume1\RiftOfTheNecroDancer_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
-    </Reference>
     <Reference Include="FMODUnity">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RiftOfTheNecroDancerOSTVolume1\RiftOfTheNecroDancer_Data\Managed\FMODUnity.dll</HintPath>
     </Reference>
@@ -40,6 +34,9 @@
     </Reference>
     <Reference Include="Google.Protobuf">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RiftOfTheNecroDancerOSTVolume1\RiftOfTheNecroDancer_Data\Managed\Google.Protobuf.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>lib\RiftOfTheNecroDancer.dll</HintPath>
     </Reference>
     <Reference Include="TicToc.Localization">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RiftOfTheNecroDancerOSTVolume1\RiftOfTheNecroDancer_Data\Managed\TicToc.Localization.dll</HintPath>

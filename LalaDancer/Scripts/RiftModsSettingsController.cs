@@ -3,7 +3,6 @@ using BepInEx.Bootstrap;
 using LalaDancer.Patches;
 using Shared;
 using Shared.MenuOptions;
-using Shared.Title;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,18 +46,18 @@ public class RiftModsSettingsController : MonoBehaviour {
 
         var controller = copy.gameObject.AddComponent<RiftModsSettingsController>();
         controller.Initialized = true;
-        controller.optionsObj = copy.Field<GameObject>("_mainOptionsParent");
-        controller.optionsGroup = copy.Field<ScrollableSelectableOptionGroup>("_scrollableSelectableOptionGroup");
-        controller.inputController = copy.Field<OptionsScreenInputController>("_optionsScreenInputController");
+        controller.optionsObj = copy._mainOptionsParent;
+        controller.optionsGroup = copy._scrollableSelectableOptionGroup;
+        controller.inputController = copy._optionsScreenInputController;
         controller.buttons = [];
         DestroyImmediate(copy); // the calls to DestroyImmediate are needed here because we instantiate a copy later this frame
 
-        foreach(var opt in controller.InputController.Field<List<SelectableOption>>("_options").Value) {
+        foreach(var opt in controller.InputController._options) {
             if(opt.gameObject != controller.OptionsGroup.gameObject) {
                 DestroyImmediate(opt.gameObject);
             }
         }
-        foreach(var opt in controller.OptionsGroup.Field<List<SelectableOption>>("_options").Value) {
+        foreach(var opt in controller.OptionsGroup._options) {
             DestroyImmediate(opt.gameObject);
         }
         controller.InputController.RemoveAllOptions();
@@ -98,7 +97,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         button.name = $"TextButton - Mod - {plugin.Metadata.Name}";
         button.OnSubmit += HandleOpenModSettings;
 
-        foreach(var label in button.Field<TMP_Text[]>("_textLabels").Value) {
+        foreach(var label in button._textLabels) {
             // the localizer will try to change the text we set
             // remove it so this doesn't happen
             if(label.TryGetComponent(out BaseLocalizer localizer)) {
@@ -110,14 +109,14 @@ public class RiftModsSettingsController : MonoBehaviour {
         buttons.Add((button, controller, HandleModSettingsClosed));
     }
 
-    private IEnumerator CloseModSettingsRoutine(RiftGenericModSettingsController controller) {
+    protected IEnumerator CloseModSettingsRoutine(RiftGenericModSettingsController controller) {
         yield return null;
         controller.gameObject.SetActive(false);
         InputController.IsInputDisabled = false;
         OptionsObj.SetActive(true);
     }
 
-    private void Awake() {
+    protected void Awake() {
         if(!Initialized) {
             throw new UnityException("RiftModsSettingsController should be created using static Create method.");
         }
@@ -127,13 +126,13 @@ public class RiftModsSettingsController : MonoBehaviour {
         }
     }
 
-    private void OnDestroy() {
+    protected void OnDestroy() {
         if(InputController) {
             InputController.OnCloseInput -= HandleCloseInput;
         }
     }
 
-    private void OnEnable() {
+    protected void OnEnable() {
         OptionsObj.SetActive(value: true);
         InputController.IsInputDisabled = false;
         InputController.SetSelectionIndex(0);
@@ -146,7 +145,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         }
     }
 
-    private void OnDisable() {
+    protected void OnDisable() {
         OptionsObj.SetActive(value: false);
         InputController.IsInputDisabled = true;
 
@@ -157,7 +156,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         }
     }
 
-    private void HandleCloseInput() {
+    protected void HandleCloseInput() {
         OnClose?.Invoke();
         InputController.SetSelectionIndex(0);
     }

@@ -1,11 +1,9 @@
-﻿using BepInEx.Configuration;
-using HarmonyLib;
+﻿using HarmonyLib;
 using LalaDancer.Scripts;
 using Shared;
 using Shared.MenuOptions;
 using Shared.Title;
 using System.Collections;
-using System.Xml.Linq;
 using TicToc.Localization.Components;
 using TMPro;
 using UnityEngine;
@@ -56,7 +54,7 @@ internal static class SettingsMenuManagerPatch {
         }
 
         // steal a prefab from the accessibility menu
-        SettingsMenuManagerPatch_Internal.carouselOptionPrefab = ____riftAccessibilitySettingsController.Field<CarouselSubOption>("_backgroundDetailCarouselOptionPrefab");
+        SettingsMenuManagerPatch_Internal.carouselOptionPrefab = ____riftAccessibilitySettingsController._backgroundDetailCarouselOptionPrefab;
         if(!SettingsMenuManagerPatch_Internal.carouselOptionPrefab) {
             Plugin.Log.LogError("Failed to load carousel sub-option prefab from accessibility settings menu. Aborting mod settings menu creation.");
             return;
@@ -75,7 +73,7 @@ internal static class SettingsMenuManagerPatch {
         modsButton.name = "TextButton - Mods";
         modsButton.OnSubmit += HandleOpenModsSettings;
 
-        foreach(var label in modsButton.Field<TMP_Text[]>("_textLabels").Value) {
+        foreach(var label in modsButton._textLabels) {
             // the localizer will try to change the text we set
             // remove it so this doesn't happen
             if(label.TryGetComponent(out BaseLocalizer localizer)) {
@@ -85,8 +83,8 @@ internal static class SettingsMenuManagerPatch {
         }
 
         Color color = new(196f / 255, 241f / 255, 65f / 255);
-        modsButton.Field<Color>("_selectedTextColor").Set(color);
-        modsButton.Field<Color>("_unselectedTextColor").Set(color * 0.6f);
+        modsButton._selectedTextColor = color;
+        modsButton._unselectedTextColor = color * 0.6f;
 
         // add the button to the input controller and layout group as the penultimate option (before BACK)
         ____inputController.TryAddOption(modsButton, ____inputController.LastOptionIndex);
