@@ -117,17 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="QuarterBeat" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\lib\MonsterNode_QuarterBeat.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="ThirdBeat" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\lib\MonsterNode_ThirdBeat.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="ThreeQuarterBeat" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\lib\MonsterNode_ThreeQuarterBeat.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="TwoThirdBeat" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\lib\MonsterNode_TwoThirdBeat.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
 </root>

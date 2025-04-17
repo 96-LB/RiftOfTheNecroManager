@@ -59,45 +59,5 @@ namespace LalaDancer.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] QuarterBeat {
-            get {
-                object obj = ResourceManager.GetObject("QuarterBeat", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] ThirdBeat {
-            get {
-                object obj = ResourceManager.GetObject("ThirdBeat", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] ThreeQuarterBeat {
-            get {
-                object obj = ResourceManager.GetObject("ThreeQuarterBeat", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] TwoThirdBeat {
-            get {
-                object obj = ResourceManager.GetObject("TwoThirdBeat", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
     }
 }

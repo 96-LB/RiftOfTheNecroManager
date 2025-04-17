@@ -1,8 +1,4 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Logging;
-using HarmonyLib;
-using UnityEngine;
+﻿using BepInEx.Configuration;
 
 namespace LalaDancer;
 
@@ -17,15 +13,6 @@ public static class Config {
         }
     }
 
-    public static class MoreShadows {
-        public static bool Enabled => enabled.Value;
-        private static ConfigEntry<bool> enabled;
-
-        public static void Initialize(ConfigGroup config) {
-            enabled = config.Bind("Enabled", true, "Enable more shadow shapes for off-beat enemies.");
-        }
-    }
-
     public static class SfxPrediction {
         public static bool Enabled => enabled.Value;
         private static ConfigEntry<bool> enabled;
@@ -35,7 +22,6 @@ public static class Config {
     }
 
     public static void Initialize(ConfigFile config) {
-        MoreShadows.Initialize(new(config, "MoreShadows"));
-        SfxPrediction.Initialize(new(config, "SfxPrediction"));
+        SfxPrediction.Initialize(new(config, "SFX Prediction"));
     }
 }
