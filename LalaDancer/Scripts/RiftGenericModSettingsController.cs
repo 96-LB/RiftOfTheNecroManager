@@ -206,14 +206,14 @@ public class RiftGenericModSettingsController : MonoBehaviour {
     }
 
     protected void OnEnable() {
-        OptionsObj.SetActive(value: true);
+        OptionsObj.SetActive(true);
         InputController.IsInputDisabled = false;
         InputController.SetSelectionIndex(0);
         OptionsGroup.SetSelectionIndex(0);
     }
 
     protected void OnDisable() {
-        OptionsObj.SetActive(value: false);
+        OptionsObj.SetActive(false);
         inputController.IsInputDisabled = true;
     }
 

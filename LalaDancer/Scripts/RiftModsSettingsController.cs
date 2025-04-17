@@ -88,14 +88,15 @@ public class RiftModsSettingsController : MonoBehaviour {
             InputController.IsInputDisabled = true;
             controller.gameObject.SetActive(true);
         }
-        void HandleModSettingsClosed() {
-            Debug.LogError("Closing menu!");
-            StartCoroutine(CloseModSettingsRoutine(controller));
-        }
         
         var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(SettingsMenuManagerPatch_Internal.textButtonPrefab, true);
         button.name = $"TextButton - Mod - {plugin.Metadata.Name}";
         button.OnSubmit += HandleOpenModSettings;
+        void HandleModSettingsClosed() {
+            Debug.LogError("Closing menu!");
+            button.SetSubmitted(false); // TODO: this whole area is a mess
+            StartCoroutine(CloseModSettingsRoutine(controller));
+        }
 
         foreach(var label in button._textLabels) {
             // the localizer will try to change the text we set
@@ -133,7 +134,7 @@ public class RiftModsSettingsController : MonoBehaviour {
     }
 
     protected void OnEnable() {
-        OptionsObj.SetActive(value: true);
+        OptionsObj.SetActive(true);
         InputController.IsInputDisabled = false;
         InputController.SetSelectionIndex(0);
         OptionsGroup.SetSelectionIndex(0);
@@ -146,7 +147,7 @@ public class RiftModsSettingsController : MonoBehaviour {
     }
 
     protected void OnDisable() {
-        OptionsObj.SetActive(value: false);
+        OptionsObj.SetActive(false);
         InputController.IsInputDisabled = true;
 
         foreach(var (_, controller, handler) in buttons) {
