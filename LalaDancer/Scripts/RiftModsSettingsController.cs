@@ -2,7 +2,6 @@
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using FMODUnity;
-using LalaDancer.Patches;
 using Shared;
 using Shared.Audio;
 using Shared.MenuOptions;
@@ -22,16 +21,15 @@ public class RiftModsSettingsController : MonoBehaviour {
     public static CarouselSubOption CarouselOptionPrefab { get; private set; }
     public static MenuButtonOption BackButtonPrefab { get; private set; }
     public static bool AllPrefabsLoaded => TextButtonPrefab && TogglePrefab && CarouselPrefab && CarouselOptionPrefab && BackButtonPrefab;
-    
+
     public bool Initialized { get; private set; }
     public GameObject OptionsObj { get; private set; }
     public ScrollableSelectableOptionGroup OptionsGroup { get; private set; }
     public OptionsScreenInputController InputController { get; private set; }
     public MenuButtonOption BackButton { get; private set; }
     public EventReference CancelSelectionSfx { get; private set; }
-    
-    public event Action OnClose;
 
+    public event Action OnClose;
 
     public static void LoadPrefabs(
         RiftAccessibilitySettingsController template,
@@ -72,7 +70,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         if(!AllPrefabsLoaded) {
             throw new UnityException($"{nameof(RiftModsSettingsController)} could not be created because not all prefabs are loaded. This usually means that your mod version is outdated. If you are using the latest version, please contact the mod developers.");
         }
-        
+
         var copy = Instantiate(Template, Template.transform.parent);
         copy.gameObject.SetActive(false);
         copy.gameObject.name = name;
@@ -82,7 +80,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         controller.OptionsGroup = copy._scrollableSelectableOptionGroup;
         controller.InputController = copy._optionsScreenInputController;
         controller.CancelSelectionSfx = copy._cancelSelectionSfx;
-        
+
         Destroy(copy);
         Destroy(controller.transform.Find("ColorBlindnessSubmenu").gameObject);
 
@@ -115,7 +113,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         controller.Initialized = true;
         return controller;
     }
-    
+
     public void AddAllModMenus() {
         var plugins = Chainloader.PluginInfos.Values.OrderBy(x => x.Metadata.Name);
         foreach(var plugin in plugins) {
@@ -129,7 +127,7 @@ public class RiftModsSettingsController : MonoBehaviour {
 
         var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab, true);
         button.name = $"TextButton - Mod - {plugin.Metadata.Name}";
-        
+
         button.OnSubmit += () => {
             OptionsObj.SetActive(false);
             InputController.IsInputDisabled = true;
@@ -162,7 +160,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             AddConfigCategory(plugin, category);
         }
     }
-    
+
     public void AddConfigCategory(PluginInfo plugin, string category) {
         AddCategoryHeader(plugin, category);
 
@@ -171,7 +169,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             AddConfigOption(plugin, option.Key, option.Value);
         }
     }
-    
+
     public void AddCategoryHeader(PluginInfo plugin, string category) {
         var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab, true);
         button.name = $"Label - Mod - {plugin.Metadata.Name} - {category}";
@@ -187,14 +185,14 @@ public class RiftModsSettingsController : MonoBehaviour {
 
     public SelectableOption AddConfigOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value) {
         return value switch {
-            ConfigEntry<bool> val => MakeToggleOption(plugin, key, val),
-            ConfigEntry<string> val => MakeCarouselOption(plugin, key, val),
-            _ when value.SettingType.IsEnum => MakeCarouselOption(plugin, key, value, value.SettingType.GetEnumNames()),
+            ConfigEntry<bool> val => AddToggleOption(plugin, key, val),
+            ConfigEntry<string> val => AddCarouselOption(plugin, key, val),
+            _ when value.SettingType.IsEnum => AddCarouselOption(plugin, key, value, value.SettingType.GetEnumNames()),
             _ => null
         };
     }
 
-    public ToggleOption MakeToggleOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<bool> value) {
+    public ToggleOption AddToggleOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<bool> value) {
         var button = (ToggleOption)OptionsGroup.AddOptionFromPrefab(TogglePrefab, true);
         button.isOn = value.Value;
         button.name = $"ToggleOption - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key}";
@@ -206,54 +204,69 @@ public class RiftModsSettingsController : MonoBehaviour {
         return button;
     }
 
-    public CarouselOptionGroup MakeCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<string> value) {
+    public CarouselOptionGroup AddCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<string> value) {
         if(value.Description.AcceptableValues is AcceptableValueList<string> vals) {
-            return MakeCarouselOption(plugin, key, value, vals.AcceptableValues);
+            return AddCarouselOption(plugin, key, value, vals.AcceptableValues);
         } else {
             return null;
         }
     }
 
-    public CarouselOptionGroup MakeCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value, string[] options) {
-        var button = (CarouselOptionGroup)OptionsGroup.AddOptionFromPrefab(CarouselPrefab, true);
-        button.name = $"CarouselOption - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key}";
-        button.RemoveAllOptions(true);
+    public CarouselOptionGroup AddCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value, string[] options) {
+        var carousel = (CarouselOptionGroup)OptionsGroup.AddOptionFromPrefab(CarouselPrefab, true);
+        carousel.name = $"CarouselOption - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key}";
+        carousel.RemoveAllOptions(true);
         var selectedIndex = 0;
+        var width = 300f; // minimum width
         foreach(var option in options) {
             if(value.Description.AcceptableValues?.IsValid(option) ?? true) {
-                var subOption = Instantiate(CarouselOptionPrefab, button.Content);
+                var subOption = Instantiate(CarouselOptionPrefab, carousel.Content);
                 subOption.name = $"CarouselSubOption - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key} - {option}";
-                subOption.SetPrimaryTextLabel(Util.PascalToSpaced(option));
-                button.TryAddOption(subOption);
+                
+                // set text and measure width
+                if(subOption._textLabels != null && subOption._textLabels.Length > 0) {
+                    var text = Util.PascalToSpaced(option);
+                    var label = subOption._textLabels[0];
+                    width = Mathf.Max(width, label.GetPreferredValues(text).x + 10f);
+                    Util.ForceSetText(label, text);
+                }
+
+                carousel.TryAddOption(subOption);
                 if(string.Equals(option, value.GetSerializedValue(), StringComparison.InvariantCultureIgnoreCase)) {
-                    selectedIndex = button.NumberOfOptions - 1;
+                    selectedIndex = carousel.NumberOfOptions - 1;
                 }
             }
         }
 
         // only generate the carousel if there are multiple options to choose from
-        if(button.NumberOfOptions < 2) {
-            button.RemoveAllOptions(true);
-            Destroy(button.gameObject);
+        if(carousel.NumberOfOptions < 2) {
+            carousel.RemoveAllOptions(true);
+            Destroy(carousel.gameObject);
             return null;
         }
 
-        button.SetSelectionIndex(selectedIndex);
-        button.FlagAsExternallyInitialized();
+        // set the title text
+        Util.ForceSetText(carousel._title, key.Key);
 
-        button.OnSelectedIndexChanged += (index) => {
+        // set the width of the buttons
+        var rect = carousel.Content.parent.GetComponent<RectTransform>();
+        rect.sizeDelta = new(width, rect.sizeDelta.y);
+        foreach(var arrow in carousel._arrows) {
+            var rect2 = arrow.GetComponent<RectTransform>();
+            rect2.anchoredPosition = new((30f + width / 2f) * Mathf.Sign(rect2.anchoredPosition.x), rect2.anchoredPosition.y);
+        }
+        
+        // initialize the carousel
+        carousel.SetSelectionIndex(selectedIndex);
+        carousel.FlagAsExternallyInitialized();
+
+        // make the carousel set the config value
+        carousel.OnSelectedIndexChanged += (index) => {
             value.SetSerializedValue(options[index]);
             Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {index} ({options[index]})");
-            button._contentArea.sizeDelta += Vector2.right * 10f;
-            Plugin.Log.LogMessage(button._contentArea.pivot);
-            Plugin.Log.LogMessage(button._contentArea.anchorMin);
-            Plugin.Log.LogMessage(button._contentArea.anchorMax);
-            DebugUtil.PrintAllChildren(button, true, true);
         };
 
-        Util.ForceSetText(button._title, key.Key);
-
-        return button;
+        return carousel;
     }
 
     protected void Awake() {

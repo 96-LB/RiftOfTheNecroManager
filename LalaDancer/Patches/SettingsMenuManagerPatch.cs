@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using LalaDancer.Scripts;
-using Shared;
 using Shared.MenuOptions;
 using Shared.Title;
 using UnityEngine;

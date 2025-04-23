@@ -1,8 +1,6 @@
 ﻿using HarmonyLib;
-using RhythmRift;
 using Shared.RhythmEngine;
 using System;
-using System.Linq;
 using UnityEngine;
 
 namespace LalaDancer.Patches;
