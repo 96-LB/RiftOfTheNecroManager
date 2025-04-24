@@ -179,7 +179,7 @@ public class RiftModsSettingsController : MonoBehaviour {
     public void AddConfigCategory(PluginInfo plugin, string category) {
         AddCategoryLabel(plugin, category);
 
-        var options = plugin.Instance.Config.Where(x => x.Key.Section == category).OrderBy(x => x.Key.Key);
+        var options = plugin.Instance.Config.Where(x => x.Key.Section == category);
         foreach(var option in options) {
             AddConfigOption(plugin, option.Key, option.Value);
         }
