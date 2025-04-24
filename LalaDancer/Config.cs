@@ -19,13 +19,14 @@ public static class Config {
         public static ConfigEntry<bool> SampleCheckbox { get; private set; }
         public static ConfigEntry<SampleEnum> SampleCarousel { get; private set; }
         public static ConfigEntry<int> SampleSlider { get; private set; }
+        public static ConfigEntry<float> SampleSliderFloat { get; private set; }
         public static void Initialize(ConfigGroup config) {
             SampleCheckbox = config.Bind("Sample Checkbox", false, "Sample checkbox for boolean values.");
             SampleCarousel = config.Bind("Sample Carousel", SampleEnum.Foo, "Sample carousel for enum values.");
             SampleSlider = config.Bind("Sample Slider", 0, "Sample slider for integer values.", new AcceptableValueRange<int>(0, 100));
+            SampleSliderFloat = config.Bind("Sample Float Slider", 0f, "Sample slider for floating point values.", new AcceptableValueRange<float>(0, 1));
         }
     }
-
 
     public static void Initialize(ConfigFile config) {
         Samples.Initialize(new(config, "Samples"));

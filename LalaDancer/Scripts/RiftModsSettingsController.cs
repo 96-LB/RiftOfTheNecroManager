@@ -6,6 +6,7 @@ using Shared;
 using Shared.Audio;
 using Shared.MenuOptions;
 using System;
+using System.Globalization;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -19,8 +20,9 @@ public class RiftModsSettingsController : MonoBehaviour {
     public static ToggleOption TogglePrefab { get; private set; }
     public static CarouselOptionGroup CarouselPrefab { get; private set; }
     public static CarouselSubOption CarouselOptionPrefab { get; private set; }
+    public static SliderOption SliderOptionPrefab { get; private set; }
     public static MenuButtonOption BackButtonPrefab { get; private set; }
-    public static bool AllPrefabsLoaded => TextButtonPrefab && TogglePrefab && CarouselPrefab && CarouselOptionPrefab && BackButtonPrefab;
+    public static bool AllPrefabsLoaded => TextButtonPrefab && TogglePrefab && CarouselPrefab && CarouselOptionPrefab && SliderOptionPrefab && BackButtonPrefab;
 
     public bool Initialized { get; private set; }
     public GameObject OptionsObj { get; private set; }
@@ -37,6 +39,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         ToggleOption togglePrefab,
         CarouselOptionGroup carouselPrefab,
         CarouselSubOption carouselOptionPrefab,
+        SliderOption sliderPrefab,
         MenuButtonOption backButtonPrefab
     ) {
         if(!template) {
@@ -54,6 +57,9 @@ public class RiftModsSettingsController : MonoBehaviour {
         if(!carouselOptionPrefab) {
             throw new UnityException("Failed to load prefab for carousel suboptions. This is usually loaded by cloning a carousel suboption from the accessibility settings menu.");
         }
+        if(!sliderPrefab) {
+            throw new UnityException("Failed to load prefab for slider options. This is usually loaded by cloning a slider option from the audio settings menu.");
+        }
         if(!backButtonPrefab) {
             throw new UnityException("Failed to load prefab for back button. This is usually loaded by cloning the back button from the accessibility settings menu.");
         }
@@ -63,6 +69,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         TogglePrefab = togglePrefab;
         CarouselPrefab = carouselPrefab;
         CarouselOptionPrefab = carouselOptionPrefab;
+        SliderOptionPrefab = sliderPrefab;
         BackButtonPrefab = backButtonPrefab;
     }
 
@@ -183,14 +190,14 @@ public class RiftModsSettingsController : MonoBehaviour {
         Destroy(button); // keeps the GameObject, but not the SelectableOption
     }
 
-    public SelectableOption AddConfigOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value) {
-        return value switch {
+    public SelectableOption AddConfigOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value) =>
+        value switch {
             ConfigEntry<bool> val => AddToggleOption(plugin, key, val),
             ConfigEntry<string> val => AddCarouselOption(plugin, key, val),
             _ when value.SettingType.IsEnum => AddCarouselOption(plugin, key, value, value.SettingType.GetEnumNames()),
+            ConfigEntry<int> or ConfigEntry<float> => AddSliderOption(plugin, key, value),
             _ => null
         };
-    }
 
     public ToggleOption AddToggleOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<bool> value) {
         var button = (ToggleOption)OptionsGroup.AddOptionFromPrefab(TogglePrefab, true);
@@ -204,13 +211,11 @@ public class RiftModsSettingsController : MonoBehaviour {
         return button;
     }
 
-    public CarouselOptionGroup AddCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<string> value) {
-        if(value.Description.AcceptableValues is AcceptableValueList<string> vals) {
-            return AddCarouselOption(plugin, key, value, vals.AcceptableValues);
-        } else {
-            return null;
-        }
-    }
+    public CarouselOptionGroup AddCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<string> value) =>
+        value.Description.AcceptableValues switch {
+            AcceptableValueList<string> vals => AddCarouselOption(plugin, key, value, vals.AcceptableValues),
+            _ => null
+        };
 
     public CarouselOptionGroup AddCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value, string[] options) {
         var carousel = (CarouselOptionGroup)OptionsGroup.AddOptionFromPrefab(CarouselPrefab, true);
@@ -269,7 +274,59 @@ public class RiftModsSettingsController : MonoBehaviour {
         return carousel;
     }
 
-    protected void Awake() {
+    public SliderOption AddSliderOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value) =>
+        value.Description.AcceptableValues switch {
+            AcceptableValueRange<int> val => AddSliderOption(plugin, key, value, val),
+            AcceptableValueRange<float> val => AddSliderOption(plugin, key, value, val),
+            _ => null
+        };
+
+    
+    public SliderOption AddSliderOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value, AcceptableValueRange<float> range) {
+        var slider = (SliderOption)OptionsGroup.AddOptionFromPrefab(SliderOptionPrefab, true);
+        slider.name = $"SliderOption - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key}";
+        
+        // this doesn't actually work, because the sliders don't get these values set until the audio menu is enabled
+        // however, the sound effects might be really annoying (especially on float sliders), so i don't care to fix it
+        slider._audioInstance = SliderOptionPrefab._audioInstance;
+        slider._decreaseValueSfxEventRef = SliderOptionPrefab._decreaseValueSfxEventRef;
+        slider._increaseValueSfxEventRef = SliderOptionPrefab._increaseValueSfxEventRef;
+        slider._atMaxValueSfxEventRef = SliderOptionPrefab._atMaxValueSfxEventRef;
+        slider._atMinValueSfxEventRef = SliderOptionPrefab._atMinValueSfxEventRef;
+
+        slider._displayAsPercentage = false;
+        slider._decimals = 3;
+        slider._valueMin = range.MinValue;
+        slider._valueMax = range.MaxValue;
+        Plugin.Log.LogMessage(value.BoxedValue);
+        Plugin.Log.LogMessage(value.BoxedValue.GetType());
+        slider._value = Convert.ToSingle(value.BoxedValue);
+        slider._valueStep = (range.MaxValue - range.MinValue) / 500f;
+        slider._initialUpdateCooldown = 0.03f;
+        slider._updateCooldownReductionInterval = 0.01f;
+        slider._updateCooldownReductionAmount = 0.00005f;
+
+        Util.ForceSetText(slider._labelText, key.Key);
+        slider.HandleValueUpdated();
+
+        slider.OnValueChanged += (_, num) => {
+            num = Mathf.Clamp(Mathf.Round(num * 1e6f) / 1e6f, range.MinValue, range.MaxValue);
+            value.SetSerializedValue(num.ToString(CultureInfo.InvariantCulture));
+            Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {num}.");
+        };
+
+        return slider;
+    }
+
+    public SliderOption AddSliderOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value, AcceptableValueRange<int> range) {
+        var slider = AddSliderOption(plugin, key, value, new AcceptableValueRange<float>(range.MinValue, range.MaxValue));
+        slider._valueStep = 1;
+        slider._initialUpdateCooldown = 0.15f;
+        slider._updateCooldownReductionAmount = 0.00025f;
+        return slider;
+    }
+
+    public void Awake() {
         if(!Initialized) {
             throw new UnityException($"{nameof(RiftModsSettingsController)} should be created using static {nameof(Create)} method.");
         }
@@ -279,30 +336,30 @@ public class RiftModsSettingsController : MonoBehaviour {
         }
     }
 
-    protected void OnDestroy() {
+    public void OnDestroy() {
         if(InputController) {
             InputController.OnCloseInput -= HandleCloseInput;
         }
     }
 
-    protected void OnEnable() {
+    public void OnEnable() {
         OptionsObj.SetActive(true);
         InputController.IsInputDisabled = false;
         InputController.SetSelectionIndex(0);
         OptionsGroup.SetSelectionIndex(0);
     }
 
-    protected void OnDisable() {
+    public void OnDisable() {
         OptionsObj.SetActive(false);
         InputController.IsInputDisabled = true;
     }
 
-    protected void HandleCloseInput() {
+    public void HandleCloseInput() {
         OnClose?.Invoke();
         InputController.SetSelectionIndex(0);
     }
 
-    protected void PlayCancelSfx() {
+    public void PlayCancelSfx() {
         if(!CancelSelectionSfx.IsNull) {
             AudioManager.Instance.PlayAudioEvent(CancelSelectionSfx, 0f, shouldCache: true, 0u, 0f, shouldApplyLatency: false);
         }

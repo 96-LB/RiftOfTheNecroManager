@@ -20,10 +20,10 @@ internal static class SettingsMenuManagerPatch {
                 template.GetComponentInChildren<ToggleOption>(),
                 template.GetComponentInChildren<CarouselOptionGroup>(),
                 template._backgroundDetailCarouselOptionPrefab,
+                __instance._riftAudioSettingsController._sliderPrefab,
                 template._cancelButton
             );
         }
-        
         // create the mods menu controller and populate it
         var controller = RiftModsSettingsController.Create();
         controller.AddAllModMenus();
