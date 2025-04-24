@@ -121,6 +121,15 @@ public class RiftModsSettingsController : MonoBehaviour {
         return controller;
     }
 
+    public void ScaleRectTransform(SelectableOption opt, float k) {
+        if(opt.TryGetComponent<RectTransform>(out var rect)) {
+            float delta = rect.rect.height * (k - 1);
+            OptionsGroup._accumulatedContentSize += delta;
+            rect.sizeDelta += Vector2.up * delta;
+            Plugin.Log.LogMessage(opt.gameObject.name + " scaled by " + k + " to " + rect.sizeDelta + " with delta " + delta + "and final rect " + rect.rect);
+        }
+    }
+
     public void AddAllModMenus() {
         var plugins = Chainloader.PluginInfos.Values.OrderBy(x => x.Metadata.Name);
         foreach(var plugin in plugins) {
@@ -156,9 +165,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         foreach(var label in button._textLabels) {
             Util.ForceSetText(label, Util.PascalToSpaced(plugin.Metadata.Name));
         }
-
-        controller.gameObject.SetActive(true);
-        controller.gameObject.SetActive(false);
+        ScaleRectTransform(button, 0.1f);
     }
 
     public void AddAllConfigOptions(PluginInfo plugin) {
@@ -166,10 +173,11 @@ public class RiftModsSettingsController : MonoBehaviour {
         foreach(var category in categories) {
             AddConfigCategory(plugin, category);
         }
+        DebugUtil.PrintAllChildren(OptionsGroup, true, true);
     }
 
     public void AddConfigCategory(PluginInfo plugin, string category) {
-        AddCategoryHeader(plugin, category);
+        AddCategoryLabel(plugin, category);
 
         var options = plugin.Instance.Config.Where(x => x.Key.Section == category).OrderBy(x => x.Key.Key);
         foreach(var option in options) {
@@ -177,7 +185,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         }
     }
 
-    public void AddCategoryHeader(PluginInfo plugin, string category) {
+    public TextButtonOption AddCategoryLabel(PluginInfo plugin, string category) {
         var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab, true);
         button.name = $"Label - Mod - {plugin.Metadata.Name} - {category}";
 
@@ -186,8 +194,11 @@ public class RiftModsSettingsController : MonoBehaviour {
             label.fontStyle |= FontStyles.Italic;
         }
 
+        ScaleRectTransform(button, 0.5f);
+
         OptionsGroup.RemoveOption(button);
         Destroy(button); // keeps the GameObject, but not the SelectableOption
+        return button;
     }
 
     public SelectableOption AddConfigOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value) =>
@@ -196,6 +207,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             ConfigEntry<string> val => AddCarouselOption(plugin, key, val),
             _ when value.SettingType.IsEnum => AddCarouselOption(plugin, key, value, value.SettingType.GetEnumNames()),
             ConfigEntry<int> or ConfigEntry<float> => AddSliderOption(plugin, key, value),
+            ConfigEntry<Color> val => AddColorOption(plugin, key, val),
             _ => null
         };
 
@@ -227,7 +239,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             if(value.Description.AcceptableValues?.IsValid(option) ?? true) {
                 var subOption = Instantiate(CarouselOptionPrefab, carousel.Content);
                 subOption.name = $"CarouselSubOption - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key} - {option}";
-                
+
                 // set text and measure width
                 if(subOption._textLabels != null && subOption._textLabels.Length > 0) {
                     var text = Util.PascalToSpaced(option);
@@ -260,7 +272,10 @@ public class RiftModsSettingsController : MonoBehaviour {
             var rect2 = arrow.GetComponent<RectTransform>();
             rect2.anchoredPosition = new((30f + width / 2f) * Mathf.Sign(rect2.anchoredPosition.x), rect2.anchoredPosition.y);
         }
-        
+
+        // reduce the enormous amount of space
+        ScaleRectTransform(carousel, 0.8f);
+
         // initialize the carousel
         carousel.SetSelectionIndex(selectedIndex);
         carousel.FlagAsExternallyInitialized();
@@ -280,50 +295,130 @@ public class RiftModsSettingsController : MonoBehaviour {
             AcceptableValueRange<float> val => AddSliderOption(plugin, key, value, val),
             _ => null
         };
-
     
-    public SliderOption AddSliderOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value, AcceptableValueRange<float> range) {
+    public SliderOption AddSliderOption(
+        PluginInfo plugin,
+        ConfigDefinition key,
+        ConfigEntryBase value,
+        AcceptableValueRange<float> range,
+        Action<string, float> onValueChanged = null
+    ) {
         var slider = (SliderOption)OptionsGroup.AddOptionFromPrefab(SliderOptionPrefab, true);
         slider.name = $"SliderOption - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key}";
-        
-        // this doesn't actually work, because the sliders don't get these values set until the audio menu is enabled
-        // however, the sound effects might be really annoying (especially on float sliders), so i don't care to fix it
-        slider._audioInstance = SliderOptionPrefab._audioInstance;
-        slider._decreaseValueSfxEventRef = SliderOptionPrefab._decreaseValueSfxEventRef;
-        slider._increaseValueSfxEventRef = SliderOptionPrefab._increaseValueSfxEventRef;
-        slider._atMaxValueSfxEventRef = SliderOptionPrefab._atMaxValueSfxEventRef;
-        slider._atMinValueSfxEventRef = SliderOptionPrefab._atMinValueSfxEventRef;
 
         slider._displayAsPercentage = false;
         slider._decimals = 3;
         slider._valueMin = range.MinValue;
         slider._valueMax = range.MaxValue;
-        Plugin.Log.LogMessage(value.BoxedValue);
-        Plugin.Log.LogMessage(value.BoxedValue.GetType());
-        slider._value = Convert.ToSingle(value.BoxedValue);
         slider._valueStep = (range.MaxValue - range.MinValue) / 500f;
         slider._initialUpdateCooldown = 0.03f;
         slider._updateCooldownReductionInterval = 0.01f;
-        slider._updateCooldownReductionAmount = 0.00005f;
+        slider._updateCooldownReductionAmount = 0.00025f;
 
+        slider._value = Convert.ToSingle(value?.BoxedValue);
         Util.ForceSetText(slider._labelText, key.Key);
         slider.HandleValueUpdated();
 
-        slider.OnValueChanged += (_, num) => {
+        slider.OnValueChanged += onValueChanged ?? ((_, num) => {
             num = Mathf.Clamp(Mathf.Round(num * 1e6f) / 1e6f, range.MinValue, range.MaxValue);
             value.SetSerializedValue(num.ToString(CultureInfo.InvariantCulture));
             Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {num}.");
-        };
+        });
+
+        ScaleRectTransform(slider, 0.75f);
 
         return slider;
     }
 
     public SliderOption AddSliderOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value, AcceptableValueRange<int> range) {
         var slider = AddSliderOption(plugin, key, value, new AcceptableValueRange<float>(range.MinValue, range.MaxValue));
+        slider._decimals = 0;
         slider._valueStep = 1;
         slider._initialUpdateCooldown = 0.15f;
-        slider._updateCooldownReductionAmount = 0.00025f;
+        slider._updateCooldownReductionAmount = 0.00125f;
         return slider;
+    }
+
+    public TextButtonOption AddColorLabel(PluginInfo plugin, ConfigDefinition key) {
+        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab, true);
+        button.name = $"Label - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key}";
+
+        foreach(var label in button._textLabels) {
+            Util.ForceSetText(label, key.Key);
+            label.fontSize *= 0.75f;
+            label.fontSizeMin *= 0.75f;
+            label.fontSizeMax *= 0.75f;
+        }
+        
+        ScaleRectTransform(button, 0.75f);
+
+        OptionsGroup.RemoveOption(button);
+        Destroy(button); // keeps the GameObject, but not the SelectableOption
+        return button;
+    }
+
+    public TextButtonOption AddPadding(PluginInfo plugin, float height = 1f) {
+        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab, true);
+        button.name = $"Padding - Mod - {plugin.Metadata.Name}";
+
+        foreach(var label in button._textLabels) {
+            Util.ForceSetText(label, "");
+        }
+
+        ScaleRectTransform(button, height);
+
+        OptionsGroup.RemoveOption(button);
+        Destroy(button); // keeps the GameObject, but not the SelectableOption
+        return button;
+    }
+
+    public TextButtonOption AddColorOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<Color> value) {
+        var header = AddColorLabel(plugin, key);
+
+        var range = new AcceptableValueRange<float>(0f, 1f);
+        var sliders = new SliderOption[4];
+        var channels = new[] { "Red", "Green", "Blue", "Alpha" };
+
+        void OnValueChanged(string channel, float num) {
+            var color = new Color(
+                Mathf.Clamp01(sliders[0]._value),
+                Mathf.Clamp01(sliders[1]._value),
+                Mathf.Clamp01(sliders[2]._value),
+                Mathf.Clamp01(sliders[3]._value)
+            );
+
+            var opaque = new Color(color.r, color.g, color.b);
+
+            value.Value = color;
+            for(int i = 0; i < sliders.Length; i++) {
+                var bgColor = i == 3 ? color : opaque;
+                sliders[i]._leftTrackSelectedColor = bgColor;
+                sliders[i]._rightTrackSelectedColor = bgColor.RGBMultiplied(0.5f);
+                if(sliders[i].IsSelected && sliders[i]._leftTrackBackground) {
+                    sliders[i]._leftTrackBackground.color = bgColor;
+                    sliders[i]._rightTrackBackground.color = bgColor.RGBMultiplied(0.5f);
+                }
+            }
+            if(!string.IsNullOrEmpty(channel)) {
+                Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] {channel} to {num}.");
+            }
+        }
+
+        for(int i = 0; i < sliders.Length; i++) {
+            sliders[i] = AddSliderOption(plugin, key, null, range, OnValueChanged);
+            sliders[i].name += " - " + channels[i];
+            sliders[i]._value = value.Value[i];
+            sliders[i]._valueId = channels[i];
+            sliders[i].HandleValueUpdated();
+            Util.ForceSetText(sliders[i]._labelText, channels[i]);
+            ScaleRectTransform(sliders[i], 0.5f);
+        }
+
+        OnValueChanged(null, 0);
+
+        var footer = AddPadding(plugin, 0.1f);
+
+        return header; // this is cursed
     }
 
     public void Awake() {
