@@ -13,15 +13,6 @@ public static class Config {
         }
     }
 
-    public static class SfxPrediction {
-        public static bool Enabled => enabled.Value;
-        private static ConfigEntry<bool> enabled;
-        public static void Initialize(ConfigGroup config) {
-            enabled = config.Bind("Enabled", true, "Enable better sound effect prediction for enemy hits.");
-        }
-    }
-
     public static void Initialize(ConfigFile config) {
-        SfxPrediction.Initialize(new(config, "SFX Prediction"));
     }
 }
