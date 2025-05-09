@@ -59,6 +59,6 @@ internal static class SettingsMenuManagerPatch {
             modsButton.transform.SetSiblingIndex(index - 1);
         }
         
-        Plugin.Log.LogInfo("Successfully created the mod settings menu.");
+        Plugin.Log.LogInfo("Successfully created mod settings menu.");
     }
 }

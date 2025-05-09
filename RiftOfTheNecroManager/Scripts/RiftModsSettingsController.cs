@@ -158,7 +158,6 @@ public class RiftModsSettingsController : MonoBehaviour {
             float delta = height - rect.rect.height;
             OptionsGroup._accumulatedContentSize += delta;
             rect.sizeDelta += Vector2.up * delta;
-            Plugin.Log.LogMessage(opt.gameObject.name + " height changed with delta " + delta + " and final rect " + rect.rect);
         }
     }
 
@@ -207,7 +206,6 @@ public class RiftModsSettingsController : MonoBehaviour {
         foreach(var category in categories) {
             AddConfigCategory(plugin, category);
         }
-        DebugUtil.PrintAllChildren(OptionsGroup, true, true);
     }
 
     public void AddConfigCategory(PluginInfo plugin, string category) {
