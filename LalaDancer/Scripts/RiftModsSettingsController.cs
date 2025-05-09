@@ -6,10 +6,13 @@ using Shared;
 using Shared.Audio;
 using Shared.MenuOptions;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace LalaDancer.Scripts;
 
@@ -29,7 +32,9 @@ public class RiftModsSettingsController : MonoBehaviour {
     public ScrollableSelectableOptionGroup OptionsGroup { get; private set; }
     public OptionsScreenInputController InputController { get; private set; }
     public MenuButtonOption BackButton { get; private set; }
+    public TextButtonOption DescriptionLabel { get; private set; }
     public EventReference CancelSelectionSfx { get; private set; }
+    public Dictionary<SelectableOption, string> Descriptions { get; } = [];
 
     public event Action OnClose;
 
@@ -94,17 +99,42 @@ public class RiftModsSettingsController : MonoBehaviour {
         // replace the back/confirm button group with just the back button
         var backMenu = (SelectableOptionGroup)controller.InputController._options[1];
         var backButton = (MenuButtonOption)backMenu._options[0];
-        var backButtonTransform = backButton.GetComponent<RectTransform>();
-        backButtonTransform.SetParent(controller.OptionsObj.transform, false);
-        backButtonTransform.pivot = new(0.5f, 0.5f);
-        backButtonTransform.anchorMin = backButtonTransform.anchorMax = new(0.5f, 0f);
-        backButtonTransform.anchoredPosition = new(0, 200);
+        var backTransform = backButton.GetComponent<RectTransform>();
+        backTransform.SetParent(controller.OptionsObj.transform, false);
+        backTransform.pivot = new(1, 0);
+        backTransform.anchorMin = backTransform.anchorMax = new(0.5f, 0f);
+        backTransform.anchoredPosition = new(-20, 200);
+        backTransform.sizeDelta = new(200, 60);
         Destroy(backMenu.gameObject);
 
         backButton.OnClick += controller.HandleCloseInput;
         backButton.OnClick += controller.PlayCancelSfx;
         controller.BackButton = backButton;
 
+        var descriptionLabel = Instantiate(TextButtonPrefab, controller.OptionsObj.transform);
+        var descriptionTransform = descriptionLabel.GetComponent<RectTransform>();
+        descriptionLabel.name = $"Label - Mod - {name} - Description";
+        descriptionTransform.pivot = new(0, 0);
+        descriptionTransform.anchorMin = backTransform.anchorMax = new(0.5f, 0f);
+        descriptionTransform.anchoredPosition = new(20, 160);
+        descriptionTransform.sizeDelta = new(666, 100);
+        foreach(var label in descriptionLabel._textLabels) {
+            label.fontStyle = FontStyles.Normal;
+            label.alignment = TextAlignmentOptions.TopLeft;
+            label.fontSize *= 0.55f;
+            label.fontSizeMin *= 0.55f;
+            label.fontSizeMax *= 0.55f;
+            label.enableAutoSizing = false;
+            if(label.TryGetComponent<ContentSizeFitter>(out var fitter)) {
+                Destroy(fitter);
+            }
+            var rect = label.GetComponent<RectTransform>();
+            rect.pivot = rect.anchorMin = rect.anchorMax = rect.anchoredPosition = new();
+            rect.sizeDelta = descriptionTransform.sizeDelta;
+        }
+        descriptionLabel.SetSelected(false, false);
+        controller.DescriptionLabel = descriptionLabel;
+        
         // all old options are removed here because of a hidden call to Initialize()
         controller.InputController.TryAddOption(controller.OptionsGroup);
         controller.InputController.TryAddOption(backButton);
@@ -121,12 +151,15 @@ public class RiftModsSettingsController : MonoBehaviour {
         return controller;
     }
 
-    public void ScaleRectTransform(SelectableOption opt, float k) {
+    public void SetRectHeight(SelectableOption opt, float height) {
         if(opt.TryGetComponent<RectTransform>(out var rect)) {
-            float delta = rect.rect.height * (k - 1);
+            if(opt.TryGetComponent<ContentSizeFitter>(out var fitter)) {
+                Destroy(fitter);
+            }
+            float delta = height - rect.rect.height;
             OptionsGroup._accumulatedContentSize += delta;
             rect.sizeDelta += Vector2.up * delta;
-            Plugin.Log.LogMessage(opt.gameObject.name + " scaled by " + k + " to " + rect.sizeDelta + " with delta " + delta + "and final rect " + rect.rect);
+            Plugin.Log.LogMessage(opt.gameObject.name + " height changed with delta " + delta + " and final rect " + rect.rect);
         }
     }
 
@@ -165,7 +198,9 @@ public class RiftModsSettingsController : MonoBehaviour {
         foreach(var label in button._textLabels) {
             Util.ForceSetText(label, Util.PascalToSpaced(plugin.Metadata.Name));
         }
-        ScaleRectTransform(button, 0.1f);
+        SetRectHeight(button, 60);
+
+        Descriptions[button] = $"{plugin.Metadata.GUID}\nv{plugin.Metadata.Version}";
     }
 
     public void AddAllConfigOptions(PluginInfo plugin) {
@@ -178,7 +213,7 @@ public class RiftModsSettingsController : MonoBehaviour {
 
     public void AddConfigCategory(PluginInfo plugin, string category) {
         AddCategoryLabel(plugin, category);
-
+        AddPadding(plugin);
         var options = plugin.Instance.Config.Where(x => x.Key.Section == category);
         foreach(var option in options) {
             AddConfigOption(plugin, option.Key, option.Value);
@@ -194,7 +229,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             label.fontStyle |= FontStyles.Italic;
         }
 
-        ScaleRectTransform(button, 0.5f);
+        SetRectHeight(button, 75);
 
         OptionsGroup.RemoveOption(button);
         Destroy(button); // keeps the GameObject, but not the SelectableOption
@@ -220,6 +255,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {isOn}.");
         };
         Util.ForceSetText(button._labelText, key.Key);
+        Descriptions[button] = value.Description.Description;
         return button;
     }
 
@@ -274,17 +310,20 @@ public class RiftModsSettingsController : MonoBehaviour {
         }
 
         // reduce the enormous amount of space
-        ScaleRectTransform(carousel, 0.8f);
+        SetRectHeight(carousel, 100);
 
         // initialize the carousel
         carousel.SetSelectionIndex(selectedIndex);
         carousel.FlagAsExternallyInitialized();
+        carousel.SetSelected(false, false);
 
         // make the carousel set the config value
         carousel.OnSelectedIndexChanged += (index) => {
             value.SetSerializedValue(options[index]);
             Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {index} ({options[index]})");
         };
+
+        Descriptions[carousel] = value.Description.Description;
 
         return carousel;
     }
@@ -325,7 +364,9 @@ public class RiftModsSettingsController : MonoBehaviour {
             Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {num}.");
         });
 
-        ScaleRectTransform(slider, 0.75f);
+        SetRectHeight(slider, 75);
+
+        Descriptions[slider] = value?.Description.Description;
 
         return slider;
     }
@@ -350,14 +391,14 @@ public class RiftModsSettingsController : MonoBehaviour {
             label.fontSizeMax *= 0.75f;
         }
         
-        ScaleRectTransform(button, 0.75f);
+        SetRectHeight(button, 40);
 
         OptionsGroup.RemoveOption(button);
         Destroy(button); // keeps the GameObject, but not the SelectableOption
         return button;
     }
 
-    public TextButtonOption AddPadding(PluginInfo plugin, float height = 1f) {
+    public TextButtonOption AddPadding(PluginInfo plugin, float height = 10) {
         var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab, true);
         button.name = $"Padding - Mod - {plugin.Metadata.Name}";
 
@@ -365,7 +406,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             Util.ForceSetText(label, "");
         }
 
-        ScaleRectTransform(button, height);
+        SetRectHeight(button, height);
 
         OptionsGroup.RemoveOption(button);
         Destroy(button); // keeps the GameObject, but not the SelectableOption
@@ -411,12 +452,13 @@ public class RiftModsSettingsController : MonoBehaviour {
             sliders[i]._valueId = channels[i];
             sliders[i].HandleValueUpdated();
             Util.ForceSetText(sliders[i]._labelText, channels[i]);
-            ScaleRectTransform(sliders[i], 0.5f);
+            SetRectHeight(sliders[i], 30f);
+            Descriptions[sliders[i]] = value.Description.Description;
         }
 
         OnValueChanged(null, 0);
 
-        var footer = AddPadding(plugin, 0.1f);
+        var footer = AddPadding(plugin);
 
         return header; // this is cursed
     }
@@ -429,6 +471,21 @@ public class RiftModsSettingsController : MonoBehaviour {
         if(InputController) {
             InputController.OnCloseInput += HandleCloseInput;
         }
+    }
+
+    public void Update() {
+        if(!Initialized) {
+            return;
+        }
+
+        var text = "";
+        if(OptionsGroup.IsSelected) {
+            var index = OptionsGroup._selectionIndex;
+            if(0 <= index && index < OptionsGroup._options.Count) {
+                Descriptions.TryGetValue(OptionsGroup._options[index], out text);
+            }
+        }
+        Util.ForceSetText(DescriptionLabel._textLabels[0], text);
     }
 
     public void OnDestroy() {
