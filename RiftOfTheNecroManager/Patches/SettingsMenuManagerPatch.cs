@@ -1,10 +1,10 @@
 ﻿using HarmonyLib;
-using LalaDancer.Scripts;
+using RiftOfTheNecroManager.Scripts;
 using Shared.MenuOptions;
 using Shared.Title;
 using UnityEngine;
 
-namespace LalaDancer.Patches;
+namespace RiftOfTheNecroManager.Patches;
 
 
 [HarmonyPatch(typeof(SettingsMenuManager), nameof(SettingsMenuManager.Start))]

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LalaDancer;
+namespace RiftOfTheNecroManager;
 
 
 public abstract class State<K, V> where V : State<K, V>, new() {

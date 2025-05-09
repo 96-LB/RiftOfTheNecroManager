@@ -4,7 +4,7 @@ using TicToc.Localization.Components;
 using TMPro;
 using UnityEngine;
 
-namespace LalaDancer;
+namespace RiftOfTheNecroManager;
 
 
 internal static class Util {

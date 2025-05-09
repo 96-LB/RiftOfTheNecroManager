@@ -1,15 +1,14 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using UnityEngine;
 
-namespace LalaDancer;
+namespace RiftOfTheNecroManager;
 
 
 [BepInPlugin(GUID, NAME, VERSION)]
 public class Plugin : BaseUnityPlugin {
-    const string GUID = "com.lalabuff.necrodancer.laladancer";
-    const string NAME = "LalaDancer";
+    const string GUID = "com.lalabuff.necrodancer.necromanager";
+    const string NAME = "RiftOfTheNecroManager";
     const string VERSION = "0.0.1";
 
     internal static ManualLogSource Log;
@@ -20,7 +19,7 @@ public class Plugin : BaseUnityPlugin {
         Harmony harmony = new(GUID);
         harmony.PatchAll();
         
-        LalaDancer.Config.Initialize(Config);
+        RiftOfTheNecroManager.Config.Initialize(Config);
 
         Log.LogInfo($"{NAME} v{VERSION} ({GUID}) has been loaded! Have fun!");
         foreach(var x in harmony.GetPatchedMethods()) {

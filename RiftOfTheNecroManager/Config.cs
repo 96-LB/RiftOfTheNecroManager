@@ -1,7 +1,7 @@
 ﻿using BepInEx.Configuration;
 using UnityEngine;
 
-namespace LalaDancer;
+namespace RiftOfTheNecroManager;
 
 public enum SampleEnum {
     Foo,

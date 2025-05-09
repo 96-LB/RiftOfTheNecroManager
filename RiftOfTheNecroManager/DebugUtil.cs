@@ -1,7 +1,6 @@
-﻿using System.Runtime.CompilerServices;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace LalaDancer;
+namespace RiftOfTheNecroManager;
 
 
 internal static class DebugUtil {

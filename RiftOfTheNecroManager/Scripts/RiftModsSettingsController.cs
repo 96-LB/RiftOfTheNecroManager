@@ -12,9 +12,8 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
 
-namespace LalaDancer.Scripts;
+namespace RiftOfTheNecroManager.Scripts;
 
 
 public class RiftModsSettingsController : MonoBehaviour {
