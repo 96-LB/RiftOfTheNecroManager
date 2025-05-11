@@ -3,7 +3,7 @@ This project is a mod for Rift of the NecroDancer which adds a settings menu for
 
 > ⚠️ BepInEx mods are <ins>**not officially supported**</ins> by Rift of the NecroDancer. If you encounter any issues with this mod, please open an issue on this GitHub repository, and do not submit reports to Brace Yourself Games! In order to prevent serious bugs, this mod will automatically disable itself when you update your game, and you will have to return here to download a new, compatible version.
 
-The current version is <ins>**v0.0.0**</ins>. Downloads for the latest version can be found [here](https://github.com/96-LB/RiftOfTheNecroManager/releases/latest). The changelog can be found [here](Changelog.md).
+The current version is <ins>**v0.1.0**</ins> and is compatible with Patch 1.4.0-b20638 released on 5 May 2025. Downloads for the latest version can be found [here](https://github.com/96-LB/RiftOfTheNecroManager/releases/latest). The changelog can be found [here](Changelog.md).
 
 ## Installation
 
@@ -11,24 +11,27 @@ Rift of the NecroManager runs on BepInEx 5. In order to use this mod, you must f
 
 ### Installing BepInEx
 1. Navigate to the latest release of BepInEx 5 [here](https://github.com/BepInEx/BepInEx/releases).
+
     > ⚠️ This mod is only tested for compatibility with BepInEx 5. If the above link takes you to a version of BepInEx 6, check out [the full list of releases](https://github.com/BepInEx/BepInEx/releases).
+
 2. Expand the "Assets" tab at the bottom and download the correct `.zip` file for your operating system.
-   
+
     > ℹ️ For example, if you use 64-bit Windows, download `BepInEx_win_x64_5.X.Y.Z.zip`.
-    
+
 4. Extract the contents of the `.zip` file into your Rift of the NecroDancer game folder.
-   
+
     > ℹ️ You can find this folder by right clicking on the game in your Steam library and clicking 'Properties'. Then navigate to 'Installed Files' and click 'Browse'.
 
 6. If you're on Mac or Linux, configure Steam to run BepInEx when you launch your game. Follow the guide [here](https://docs.bepinex.dev/articles/advanced/steam_interop.html).
 
 7. Run Rift of the NecroDancer to set up BepInEx.
+
     > ℹ️ If done correctly, your `BepInEx` folder should now contain several subfolders, such as `BepInEx/plugins`.
 
 ### Installing Rift of the NecroManager
 1. Navigate to the latest release of Rift of the NecroManager [here](https://github.com/96-LB/RiftOfTheNecroManager/releases/latest).
-   
-   > ⚠️ Do NOT download the source code using the button at the top of this page. If you're downloading a `.zip`, you are at the wrong place. 
+
+   > ⚠️ Do NOT download the source code using the button at the top of this page. If you're downloading a `.zip`, you are at the wrong place.
 
 2. Expand the "Assets" tab at the bottom and download `RiftOfTheNecroManager.dll`.
 
@@ -47,10 +50,10 @@ Setting types which can be modified in-game include:
 - Enums
 - Strings with a specified set of acceptable values
 - Integers with a specified range of acceptable values
-- Floats with a specified range of acceptable values 
+- Floats with a specified range of acceptable values
 - Colors
 
 Some limitations include:
-- **Some settings require a mod restart to take effect!** Whether a setting has immediate effect depends on the mod's code, and there is no way for Rift of the NecroManager to know this
-- Particularly large ranges of integers can be difficult or slow to modify in-game because the settings are implemented as sliders 
-- Float granularity is limited for the same reason
+- **Some settings require a game restart to take effect!** This depends on the mod's code, and Rift of the NecroManager is unable to know whether a configuration option has immediate effect or not.
+- Particularly large ranges of integers can be difficult or slow to modify in-game because the settings are implemented as sliders.
+- Float granularity is limited for the same reason.
