@@ -12,7 +12,7 @@ public class Plugin : BaseUnityPlugin {
     const string GUID = "com.lalabuff.necrodancer.necromanager";
     const string NAME = "RiftOfTheNecroManager";
     const string VERSION = "0.1.0";
-    readonly static string[] BUILDS = ["1.4.0-b20638"];
+    readonly static string[] BUILDS = ["1.5.0-b20860", "1.4.0-b20638"];
 
     internal static ManualLogSource Log;
 
