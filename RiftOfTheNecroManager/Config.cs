@@ -32,7 +32,16 @@ public static class Config {
         }
     }
 
+    public static class VersionControl {
+        public static ConfigEntry<string> VersionOverride;
+
+        public static void Initialize(ConfigGroup config) {
+            VersionOverride = config.Bind("Version Override", "", "Input the current build version or '*' to override the version check.");
+        }
+    }
+
     public static void Initialize(ConfigFile config) {
         Samples.Initialize(new(config, "Samples"));
+        VersionControl.Initialize(new(config, "Version Control"));
     }
 }

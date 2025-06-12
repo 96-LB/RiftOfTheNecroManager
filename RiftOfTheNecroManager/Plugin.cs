@@ -19,14 +19,16 @@ public class Plugin : BaseUnityPlugin {
     internal void Awake() {
         Log = Logger;
 
+        RiftOfTheNecroManager.Config.Initialize(Config);
+
         var build = BuildInfoHelper.Instance.BuildId;
+        var overrideVersion = RiftOfTheNecroManager.Config.VersionControl.VersionOverride.Value;
+        var check = BUILDS.Contains(build) || build == overrideVersion || overrideVersion == "*";
         Log.LogInfo($"Current build info: {build} {BuildInfoHelper.Instance.CommitHash}");
-        if(!BUILDS.Contains(build)) {
+        if(!check) {
             Log.LogFatal($"The current version of the game is not compatible with this plugin. Please update the game or the mod to the correct version. The current mod version is v{VERSION} and the current game version is {build}. Allowed game versions: {string.Join(", ", BUILDS)}");
             return;
         }
-
-        RiftOfTheNecroManager.Config.Initialize(Config);
 
         Harmony harmony = new(GUID);
         harmony.PatchAll();
