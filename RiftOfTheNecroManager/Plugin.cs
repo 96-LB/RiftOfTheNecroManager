@@ -2,6 +2,7 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using Shared;
+using System;
 using System.Linq;
 
 namespace RiftOfTheNecroManager;
@@ -11,32 +12,39 @@ namespace RiftOfTheNecroManager;
 public class Plugin : BaseUnityPlugin {
     const string GUID = "com.lalabuff.necrodancer.necromanager";
     const string NAME = "RiftOfTheNecroManager";
-    const string VERSION = "0.2.1";
-    readonly static string[] BUILDS = ["1.5.0-b20869", "1.5.0-b20860", "1.4.0-b20638"];
+    const string VERSION = "0.2.2";
 
-    internal static ManualLogSource Log;
+    public const string ALLOWED_VERSIONS = "1.5.0 1.4.0";
+    public static string[] AllowedVersions => ALLOWED_VERSIONS.Split(' ');
+
+    internal static ManualLogSource Log { get; private set; }
 
     internal void Awake() {
-        Log = Logger;
+        try {
+            Log = Logger;
+            Log.LogInfo($"Current build info: {BuildInfoHelper.Instance.BuildId} {BuildInfoHelper.Instance.CommitHash}");
 
-        RiftOfTheNecroManager.Config.Initialize(Config);
+            RiftOfTheNecroManager.Config.Initialize(Config);
 
-        var build = BuildInfoHelper.Instance.BuildId;
-        var overrideVersion = RiftOfTheNecroManager.Config.VersionControl.VersionOverride.Value;
-        var check = BUILDS.Contains(build) || build == overrideVersion || overrideVersion == "*";
-        Log.LogInfo($"Current build info: {build} {BuildInfoHelper.Instance.CommitHash}");
-        if(!check) {
-            Log.LogFatal($"The current version of the game is not compatible with this plugin. Please update the game or the mod to the correct version. The current mod version is v{VERSION} and the current game version is {build}. Allowed game versions: {string.Join(", ", BUILDS)}");
-            return;
+            var gameVersion = BuildInfoHelper.Instance.BuildId.Split('-')[0];
+            var overrideVersion = RiftOfTheNecroManager.Config.VersionControl.VersionOverride.Value;
+            var check = AllowedVersions.Contains(gameVersion) || gameVersion == overrideVersion || overrideVersion == "*";
+            if(!check) {
+                Log.LogFatal($"The current version of the game is not compatible with this plugin. Please update the game or the mod to the correct version. The current mod version is v{VERSION} and the current game version is {gameVersion}. Allowed game versions: {string.Join(", ", AllowedVersions)}");
+                return;
+            }
+
+            Harmony harmony = new(GUID);
+            harmony.PatchAll();
+
+            foreach(var x in harmony.GetPatchedMethods()) {
+                Log.LogInfo($"Patched {x}.");
+            }
+
+            Log.LogMessage($"{NAME} v{VERSION} ({GUID}) has been loaded! Have fun!");
+        } catch(Exception e) {
+            Log.LogFatal("Encountered error while trying to initialize plugin.");
+            Log.LogFatal(e);
         }
-
-        Harmony harmony = new(GUID);
-        harmony.PatchAll();
-        
-        foreach(var x in harmony.GetPatchedMethods()) {
-            Log.LogInfo($"Patched {x}.");
-        }
-
-        Log.LogMessage($"{NAME} v{VERSION} ({GUID}) has been loaded! Have fun!");
     }
 }
