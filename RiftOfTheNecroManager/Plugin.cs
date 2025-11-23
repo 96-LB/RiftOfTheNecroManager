@@ -17,31 +17,23 @@ public class Plugin : BaseUnityPlugin {
     public const string ALLOWED_VERSIONS = "1.10.0 1.8.0 1.7.1 1.7.0 1.6.0 1.5.1 1.5.0 1.4.0";
     public static string[] AllowedVersions => ALLOWED_VERSIONS.Split(' ');
 
-    internal static ManualLogSource Log { get; private set; }
+    internal static ManualLogSource Log { get; private set; } = new(NAME);
 
     internal void Awake() {
         try {
             Log = Logger;
-            Log.LogInfo($"Current build info: {BuildInfoHelper.Instance.BuildId} {BuildInfoHelper.Instance.CommitHash}");
 
-            RiftOfTheNecroManager.Config.Initialize(Config);
+            RiftOfTheNecroManager.Config.Bind(Config);
 
             var gameVersion = BuildInfoHelper.Instance.BuildId.Split('-')[0];
-            var overrideVersion = RiftOfTheNecroManager.Config.VersionControl.VersionOverride.Value;
-            var check = AllowedVersions.Contains(gameVersion) || gameVersion == overrideVersion || overrideVersion == "*";
-            if(!check) {
+            if(!AllowedVersions.Contains(gameVersion) && !RiftOfTheNecroManager.Config.VersionControl.DisableVersionCheck) {
                 Log.LogFatal($"The current version of the game is not compatible with this plugin. Please update the game or the mod to the correct version. The current mod version is v{VERSION} and the current game version is {gameVersion}. Allowed game versions: {string.Join(", ", AllowedVersions)}");
                 return;
             }
 
             Harmony harmony = new(GUID);
             harmony.PatchAll();
-
-            foreach(var x in harmony.GetPatchedMethods()) {
-                Log.LogInfo($"Patched {x}.");
-            }
-
-            Log.LogMessage($"{NAME} v{VERSION} ({GUID}) has been loaded! Have fun!");
+            Log.LogMessage($"{NAME} v{VERSION} ({GUID}) has been loaded!");
         } catch(Exception e) {
             Log.LogFatal("Encountered error while trying to initialize plugin.");
             Log.LogFatal(e);

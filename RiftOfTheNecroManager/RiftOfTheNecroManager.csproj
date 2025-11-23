@@ -6,6 +6,7 @@
     <Product>RiftOfTheNecroManager</Product>
     <Version>0.2.8</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
       https://api.nuget.org/v3/index.json;
@@ -13,8 +14,20 @@
       https://nuget.samboy.dev/v3/index.json
     </RestoreAdditionalProjectSources>
     <RootNamespace>RiftOfTheNecroManager</RootNamespace>
+	<Authors>96 LB</Authors>
+	<Description>Rift of the NecroDancer mod which adds a settings menu for configuring other mods</Description>
+	<PackageProjectUrl></PackageProjectUrl>
+	<RepositoryUrl>https://github.com/96-LB/RiftOfTheNecroManager</RepositoryUrl>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
-  
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />

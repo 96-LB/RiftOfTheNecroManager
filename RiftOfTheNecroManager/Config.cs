@@ -10,38 +10,36 @@ public enum SampleEnum {
 }
 
 public static class Config {
-    public class ConfigGroup(ConfigFile config, string group) {
-        public ConfigEntry<T> Bind<T>(string key, T defaultValue, string description, AcceptableValueBase acceptableValues = null, params object[] tags) {
-            return config.Bind(group, key, defaultValue, new ConfigDescription(description, acceptableValues, tags));
-        }
-    }
-
     public static class Samples {
-        public static ConfigEntry<bool> SampleCheckbox { get; private set; }
-        public static ConfigEntry<SampleEnum> SampleCarousel { get; private set; }
-        public static ConfigEntry<int> SampleSlider { get; private set; }
-        public static ConfigEntry<float> SampleSliderFloat { get; private set; }
-        public static ConfigEntry<Color> SampleColor { get; private set; }
-
-        public static void Initialize(ConfigGroup config) {
-            SampleCheckbox = config.Bind("Sample Checkbox", false, "Sample checkbox for boolean values.");
-            SampleCarousel = config.Bind("Sample Carousel", SampleEnum.Foo, "Sample carousel for enum values.");
-            SampleSlider = config.Bind("Sample Slider", 0, "Sample slider for integer values.", new AcceptableValueRange<int>(0, 100));
-            SampleSliderFloat = config.Bind("Sample Float Slider", 0f, "Sample slider for floating point values.", new AcceptableValueRange<float>(0, 1));
-            SampleColor = config.Bind("Sample Color", new Color(), "Sample color picker.");
+        const string GROUP = "Samples";
+        
+        public static Setting<bool> SampleCheckbox { get; } = new("Sample Checkbox", false, "Sample checkbox for boolean values.");
+        public static Setting<SampleEnum> SampleCarousel { get; } = new("Sample Carousel", SampleEnum.Foo, "Sample carousel for enum values.");
+        public static Setting<int> SampleSlider { get; } = new("Sample Slider", 0, "Sample slider for integer values.", new AcceptableValueRange<int>(0, 100));
+        public static Setting<float> SampleSliderFloat { get; } = new("Sample Float Slider", 0f, "Sample slider for floating point values.", new AcceptableValueRange<float>(0, 1));
+        public static Setting<Color> SampleColor { get; } = new("Sample Color", new Color(), "Sample color picker.");
+        
+        public static void Bind(ConfigFile config) {
+            SampleCheckbox.Bind(config, GROUP);
+            SampleCarousel.Bind(config, GROUP);
+            SampleSlider.Bind(config, GROUP);
+            SampleSliderFloat.Bind(config, GROUP);
+            SampleColor.Bind(config, GROUP);
         }
     }
 
     public static class VersionControl {
-        public static ConfigEntry<string> VersionOverride;
+        const string GROUP = "Version Control";
 
-        public static void Initialize(ConfigGroup config) {
-            VersionOverride = config.Bind("Version Override", "", "Input the current build version or '*' to override the version check.");
+        public static Setting<bool> DisableVersionCheck { get; } = new("Disable Version Check", false, "[WARNING] Turning this on may cause bugs or crashes when the game updates.");
+
+        public static void Bind(ConfigFile config) {
+            DisableVersionCheck.Bind(config, GROUP);
         }
     }
 
-    public static void Initialize(ConfigFile config) {
-        Samples.Initialize(new(config, "Samples"));
-        VersionControl.Initialize(new(config, "Version Control"));
+    public static void Bind(ConfigFile config) {
+        Samples.Bind(config);
+        VersionControl.Bind(config);
     }
 }
