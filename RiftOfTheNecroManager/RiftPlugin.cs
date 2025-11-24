@@ -35,8 +35,10 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
     }
 
     protected virtual void Initialize() {
-        Harmony harmony = new(Info.Metadata.GUID);
-        harmony.PatchAll(GetType().Assembly);
+        var assembly = GetType().Assembly;
+        var harmony = new Harmony(Info.Metadata.GUID);
+        harmony.PatchAll(assembly);
+        Log.SetLog(assembly, Logger);
     }
 }
 
