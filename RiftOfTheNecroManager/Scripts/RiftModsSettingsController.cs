@@ -38,7 +38,7 @@ public class RiftModsSettingsController : MonoBehaviour {
 
     public event Action? OnClose;
 
-    public static void LoadPrefabs(
+    public static bool LoadPrefabs(
         RiftAccessibilitySettingsController template,
         TextButtonOption accessibilityButton,
         ToggleOption togglePrefab,
@@ -48,25 +48,32 @@ public class RiftModsSettingsController : MonoBehaviour {
         MenuButtonOption backButtonPrefab
     ) {
         if(!template) {
-            throw new UnityException("Failed to load prefab for mod menu. This is usually loaded by cloning the accessibility settings menu.");
+            Log.Fatal("Failed to load prefab for mod menu. This is usually loaded by cloning the accessibility settings menu.");
+            return false;
         }
         if(!accessibilityButton) {
-            throw new UnityException("Failed to load prefab for text buttons. This is usually loaded by cloning the button for the accessibility settings menu.");
+            Log.Fatal("Failed to load prefab for text buttons. This is usually loaded by cloning the button for the accessibility settings menu.");
+            return false;
         }
         if(!togglePrefab) {
-            throw new UnityException("Failed to load prefab for toggle options. This is usually loaded by cloning a toggle option from the accessibility settings menu.");
+            Log.Fatal("Failed to load prefab for toggle options. This is usually loaded by cloning a toggle option from the accessibility settings menu.");
+            return false;
         }
         if(!carouselPrefab) {
-            throw new UnityException("Failed to load prefab for carousel options. This is usually loaded by cloning a carousel option from the accessibility settings menu.");
+            Log.Fatal("Failed to load prefab for carousel options. This is usually loaded by cloning a carousel option from the accessibility settings menu.");
+            return false;
         }
         if(!carouselOptionPrefab) {
-            throw new UnityException("Failed to load prefab for carousel suboptions. This is usually loaded by cloning a carousel suboption from the accessibility settings menu.");
+            Log.Fatal("Failed to load prefab for carousel suboptions. This is usually loaded by cloning a carousel suboption from the accessibility settings menu.");
+            return false;
         }
         if(!sliderPrefab) {
-            throw new UnityException("Failed to load prefab for slider options. This is usually loaded by cloning a slider option from the audio settings menu.");
+            Log.Fatal("Failed to load prefab for slider options. This is usually loaded by cloning a slider option from the audio settings menu.");
+            return false;
         }
         if(!backButtonPrefab) {
-            throw new UnityException("Failed to load prefab for back button. This is usually loaded by cloning the back button from the accessibility settings menu.");
+            Log.Fatal("Failed to load prefab for back button. This is usually loaded by cloning the back button from the accessibility settings menu.");
+            return false;
         }
 
         Template = template;
@@ -76,11 +83,13 @@ public class RiftModsSettingsController : MonoBehaviour {
         CarouselOptionPrefab = carouselOptionPrefab;
         SliderOptionPrefab = sliderPrefab;
         BackButtonPrefab = backButtonPrefab;
+        return true;
     }
 
-    public static RiftModsSettingsController Create(string title = "MODS", string name = "ModsSettingsScreen") {
+    public static RiftModsSettingsController? Create(string title = "MODS", string name = "ModsSettingsScreen") {
         if(!AllPrefabsLoaded) {
-            throw new UnityException($"{nameof(RiftModsSettingsController)} could not be created because not all prefabs are loaded. This usually means that your mod version is outdated. If you are using the latest version, please contact the mod developers.");
+            Log.Fatal($"{nameof(RiftModsSettingsController)} could not be created because not all prefabs are loaded. This usually means that your mod version is outdated. If you are using the latest version, please contact the mod developers.");
+            return null;
         }
 
         var copy = Instantiate(Template!, Template!.transform.parent);
@@ -171,11 +180,16 @@ public class RiftModsSettingsController : MonoBehaviour {
 
     public void AddModMenu(PluginInfo plugin) {
         if(OptionsGroup == null) {
-            Plugin.Log.LogFatal("Failed to add mod menu because OptionsGroup is null.");
+            Log.Fatal("Failed to add mod menu because OptionsGroup is null.");
             return;
         }
 
         var controller = Create(Util.PascalToSpaced(plugin.Metadata.Name), $"ModSettingsScreen - {plugin.Metadata.Name}");
+        if(controller == null) {
+            Log.Fatal($"Failed to create settings controller for mod {plugin.Metadata.Name}.");
+            return;
+        }
+
         controller.AddAllConfigOptions(plugin);
 
         var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab, true);
@@ -223,13 +237,15 @@ public class RiftModsSettingsController : MonoBehaviour {
         }
     }
 
-    public TextButtonOption AddCategoryLabel(PluginInfo plugin, string category) {
+    public TextButtonOption? AddCategoryLabel(PluginInfo plugin, string category) {
         if(OptionsGroup == null) {
-            throw new UnityException("Failed to add category label because OptionsGroup is null.");
+            Log.Fatal("Failed to add category label because OptionsGroup is null.");
+            return null;
         }
 
         if(!AllPrefabsLoaded) {
-            throw new UnityException("Failed to add category label because not all prefabs are loaded.");
+            Log.Fatal("Failed to add category label because not all prefabs are loaded.");
+            return null;
         }
 
         var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab!, true);
@@ -259,12 +275,12 @@ public class RiftModsSettingsController : MonoBehaviour {
 
     public ToggleOption? AddToggleOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<bool> value) {
         if(OptionsGroup == null) {
-            Plugin.Log.LogFatal("Failed to add toggle option because OptionsGroup is null.");
+            Log.Fatal("Failed to add toggle option because OptionsGroup is null.");
             return null;
         }
 
         if(!AllPrefabsLoaded) {
-            Plugin.Log.LogFatal("Failed to add toggle option because not all prefabs are loaded.");
+            Log.Fatal("Failed to add toggle option because not all prefabs are loaded.");
             return null;
         }
 
@@ -273,7 +289,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         button.name = $"ToggleOption - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key}";
         button.OnValueChanged += (isOn) => {
             value.Value = isOn;
-            Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {isOn}.");
+            Log.Info($"Updated config [{key.Section}.{key.Key}] to {isOn}.");
         };
         Util.ForceSetText(button._labelText, key.Key);
         Descriptions[button] = value.Description.Description;
@@ -288,12 +304,12 @@ public class RiftModsSettingsController : MonoBehaviour {
 
     public CarouselOptionGroup? AddCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value, string[] options) {
         if(OptionsGroup == null) {
-            Plugin.Log.LogFatal("Failed to add carousel option because OptionsGroup is null.");
+            Log.Fatal("Failed to add carousel option because OptionsGroup is null.");
             return null;
         }
 
         if(!AllPrefabsLoaded) {
-            Plugin.Log.LogFatal("Failed to add carousel option because not all prefabs are loaded.");
+            Log.Fatal("Failed to add carousel option because not all prefabs are loaded.");
             return null;
         }
 
@@ -351,7 +367,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         // make the carousel set the config value
         carousel.OnSelectedIndexChanged += (index) => {
             value.SetSerializedValue(options[index]);
-            Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {index} ({options[index]})");
+            Log.Info($"Updated config [{key.Section}.{key.Key}] to {index} ({options[index]})");
         };
 
         Descriptions[carousel] = value.Description.Description;
@@ -374,12 +390,12 @@ public class RiftModsSettingsController : MonoBehaviour {
         Action<string, float>? onValueChanged = null
     ) {
         if(OptionsGroup == null) {
-            Plugin.Log.LogFatal("Failed to add slider option because OptionsGroup is null.");
+            Log.Fatal("Failed to add slider option because OptionsGroup is null.");
             return null;
         }
 
         if(!AllPrefabsLoaded) {
-            Plugin.Log.LogFatal("Failed to add slider option because not all prefabs are loaded.");
+            Log.Fatal("Failed to add slider option because not all prefabs are loaded.");
             return null;
         }
 
@@ -402,7 +418,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         slider.OnValueChanged += onValueChanged ?? ((_, num) => {
             num = Mathf.Clamp(Mathf.Round(num * 1e6f) / 1e6f, range.MinValue, range.MaxValue);
             value?.SetSerializedValue(num.ToString(CultureInfo.InvariantCulture));
-            Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] to {num}.");
+            Log.Info($"Updated config [{key.Section}.{key.Key}] to {num}.");
         });
 
         SetRectHeight(slider, 75);
@@ -425,12 +441,12 @@ public class RiftModsSettingsController : MonoBehaviour {
 
     public TextButtonOption? AddColorLabel(PluginInfo plugin, ConfigDefinition key) {
         if(OptionsGroup == null) {
-            Plugin.Log.LogFatal("Failed to add color label because OptionsGroup is null.");
+            Log.Fatal("Failed to add color label because OptionsGroup is null.");
             return null;
         }
 
         if(!AllPrefabsLoaded) {
-            Plugin.Log.LogFatal("Failed to add color label because not all prefabs are loaded.");
+            Log.Fatal("Failed to add color label because not all prefabs are loaded.");
             return null;
         }
 
@@ -453,12 +469,12 @@ public class RiftModsSettingsController : MonoBehaviour {
 
     public TextButtonOption? AddPadding(PluginInfo plugin, float height = 10) {
         if(OptionsGroup == null) {
-            Plugin.Log.LogFatal("Failed to add padding because OptionsGroup is null.");
+            Log.Fatal("Failed to add padding because OptionsGroup is null.");
             return null;
         }
 
         if(!AllPrefabsLoaded) {
-            Plugin.Log.LogFatal("Failed to add padding because not all prefabs are loaded.");
+            Log.Fatal("Failed to add padding because not all prefabs are loaded.");
             return null;
         }
 
@@ -504,7 +520,7 @@ public class RiftModsSettingsController : MonoBehaviour {
                 }
             }
             if(!string.IsNullOrEmpty(channel)) {
-                Plugin.Log.LogInfo($"Updated config [{key.Section}.{key.Key}] {channel} to {num}.");
+                Log.Info($"Updated config [{key.Section}.{key.Key}] {channel} to {num}.");
             }
         }
 
@@ -534,7 +550,8 @@ public class RiftModsSettingsController : MonoBehaviour {
 
     public void Awake() {
         if(!Initialized) {
-            throw new UnityException($"{nameof(RiftModsSettingsController)} should be created using static {nameof(Create)} method.");
+            Log.Error($"{nameof(RiftModsSettingsController)} should be created using static {nameof(Create)} method.");
+            return;
         }
 
         if(InputController != null) {

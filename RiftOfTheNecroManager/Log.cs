@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using UnityEngine;
 
 namespace RiftOfTheNecroManager;
 
@@ -11,21 +12,21 @@ public static class Log {
 
     private static Assembly GetCallingAssembly() {
         var stackTrace = new StackTrace();
-        var thisAssembly = Assembly.GetExecutingAssembly();
         for(int i = 1; i < stackTrace.FrameCount; i++) {
             var frame = stackTrace.GetFrame(i);
-            var assembly = frame.GetMethod()?.DeclaringType?.Assembly;
-            if(assembly != null && assembly != thisAssembly) {
+            var type = frame.GetMethod()?.DeclaringType;
+            var assembly = type?.Assembly;
+            if(assembly != null && type != typeof(Log)) {
                 return assembly;
             }
         }
-        return thisAssembly;
+        return Assembly.GetExecutingAssembly();
     }
 
     internal static ManualLogSource GetLog() {
         var assembly = GetCallingAssembly();
         if(!Logs.TryGetValue(assembly, out var logSource)) {
-            logSource = Logger.CreateLogSource(assembly.GetName().Name ?? "Unknown");
+            logSource = BepInEx.Logging.Logger.CreateLogSource(assembly.GetName().Name ?? "Unknown");
             Logs[assembly] = logSource;
         }
         return logSource;
@@ -40,4 +41,49 @@ public static class Log {
     public static void Warning(object message) => AtLevel(LogLevel.Warning, message);
     public static void Error(object message) => AtLevel(LogLevel.Error, message);
     public static void Fatal(object message) => AtLevel(LogLevel.Fatal, message);
+    
+    // utility methods
+
+    private static void PrintAllComponents(GameObject gameObject, int depth = 1) {
+        foreach(var component in gameObject.GetComponents<Component>()) {
+            Log.Info($"{new string(' ', depth * 2)}• {component.GetType().Name}");
+        }
+    }
+
+    internal static void PrintAllComponents(GameObject gameObject) {
+        Log.Info($"Components of [{gameObject}]:");
+        PrintAllComponents(gameObject, 1);
+    }
+    internal static void PrintAllComponents(Transform transform) {
+        PrintAllComponents(transform.gameObject);
+    }
+
+    internal static void PrintAllComponents(Component component) {
+        PrintAllComponents(component.gameObject);
+    }
+
+    private static void PrintAllChildren(Transform transform, int depth, bool recursive = false, bool components = false) {
+        if(components) {
+            PrintAllComponents(transform.gameObject, depth + 1);
+        }
+        foreach(Transform child in transform) {
+            Log.Info($"{new string(' ', depth * 2)}○ {child.name}");
+            if(recursive) {
+                PrintAllChildren(child, depth + 1, recursive, components);
+            }
+        }
+    }
+
+    internal static void PrintAllChildren(Transform transform, bool recursive = false, bool components = false) {
+        Log.Info($"Children of [{transform}]:");
+        PrintAllChildren(transform, 1, recursive, components);
+    }
+
+    internal static void PrintAllChildren(GameObject gameObject, bool recursive = false, bool components = false) {
+        PrintAllChildren(gameObject.transform, recursive, components);
+    }
+
+    internal static void PrintAllChildren(Component component, bool recursive = false, bool components = false) {
+        PrintAllChildren(component.gameObject, recursive, components);
+    }
 }

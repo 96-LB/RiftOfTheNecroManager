@@ -26,6 +26,10 @@ internal static class SettingsMenuManagerPatch {
         }
         // create the mods menu controller and populate it
         var controller = RiftModsSettingsController.Create();
+        if(controller == null) {
+            Log.Fatal("Failed to create mod settings menu controller.");
+            return;
+        }
         controller.AddAllModMenus();
 
         // add a button to the base settings menu
@@ -59,6 +63,6 @@ internal static class SettingsMenuManagerPatch {
             modsButton.transform.SetSiblingIndex(index - 1);
         }
         
-        Plugin.Log.LogInfo("Successfully created mod settings menu.");
+        Log.Info("Successfully created mod settings menu.");
     }
 }
