@@ -39,6 +39,7 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
         var harmony = new Harmony(Info.Metadata.GUID);
         harmony.PatchAll(assembly);
         Log.SetLog(assembly, Logger);
+        Setting.BindAssembly(Config, assembly);
     }
 }
 

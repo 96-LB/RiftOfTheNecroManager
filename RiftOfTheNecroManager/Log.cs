@@ -10,21 +10,8 @@ namespace RiftOfTheNecroManager;
 public static class Log {
     private static Dictionary<Assembly, ManualLogSource> Logs { get; } = [];
 
-    private static Assembly GetCallingAssembly() {
-        var stackTrace = new StackTrace();
-        for(int i = 1; i < stackTrace.FrameCount; i++) {
-            var frame = stackTrace.GetFrame(i);
-            var type = frame.GetMethod()?.DeclaringType;
-            var assembly = type?.Assembly;
-            if(assembly != null && type != typeof(Log)) {
-                return assembly;
-            }
-        }
-        return Assembly.GetExecutingAssembly();
-    }
-
     internal static ManualLogSource GetLog() {
-        var assembly = GetCallingAssembly();
+        var assembly = Util.GetCallingAssembly(typeof(Log));
         if(!Logs.TryGetValue(assembly, out var logSource)) {
             logSource = BepInEx.Logging.Logger.CreateLogSource(assembly.GetName().Name ?? "Unknown");
             Logs[assembly] = logSource;

@@ -1,4 +1,7 @@
 ﻿using System.Collections;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using TicToc.Localization.Components;
 using TMPro;
@@ -46,5 +49,18 @@ internal static class Util {
             action();
         }
         obj.StartCoroutine(coroutine());
+    }
+
+    public static Assembly GetCallingAssembly(params System.Type[] typesToExclude) {
+        var stackTrace = new StackTrace();
+        for(int i = 1; i < stackTrace.FrameCount; i++) {
+            var frame = stackTrace.GetFrame(i);
+            var type = frame.GetMethod()?.DeclaringType;
+            var assembly = type?.Assembly;
+            if(assembly != null && !typesToExclude.Contains(type)) {
+                return assembly;
+            }
+        }
+        return Assembly.GetExecutingAssembly();
     }
 }
