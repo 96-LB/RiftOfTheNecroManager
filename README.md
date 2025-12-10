@@ -3,7 +3,7 @@ This project is a mod for Rift of the NecroDancer which adds a settings menu for
 
 > ⚠️ BepInEx mods are <ins>**not officially supported**</ins> by Rift of the NecroDancer. If you encounter any issues with this mod, please open an issue on this GitHub repository, and do not submit reports to Brace Yourself Games! In order to prevent serious bugs, this mod will automatically disable itself when you update your game, and you will have to return here to download a new, compatible version.
 
-The current version is <ins>**v0.2.8**</ins> and is compatible with Rift of the NecroDancer Patch 1.10.0 released on 30 October 2025. Downloads for the latest version can be found [here](https://github.com/96-LB/RiftOfTheNecroManager/releases/latest). The changelog can be found [here](Changelog.md).
+The current version is <ins>**v0.2.9**</ins> and is compatible with Rift of the NecroDancer Patch 1.11.1 released on 10 December 2025. Downloads for the latest version can be found [here](https://github.com/96-LB/RiftOfTheNecroManager/releases/latest). The changelog can be found [here](Changelog.md).
 
 ## Installation
 
