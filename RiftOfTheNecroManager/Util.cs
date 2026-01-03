@@ -18,7 +18,7 @@ internal static class Util {
         var result = new StringBuilder(str[0].ToString(), 2 * str.Length);
         for(int i = 1; i < str.Length; i++) {
             char c = str[i];
-            if(char.IsUpper(c) && !char.IsUpper(str[i - 1])) {
+            if(char.IsUpper(c) && !char.IsUpper(str[i - 1]) && !char.IsWhiteSpace(str[i - 1])) {
                 result.Append(' ');
             }
             result.Append(c);

@@ -1,6 +1,5 @@
 ﻿using BepInEx.Logging;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using UnityEngine;
 
@@ -33,12 +32,12 @@ public static class Log {
 
     private static void PrintAllComponents(GameObject gameObject, int depth = 1) {
         foreach(var component in gameObject.GetComponents<Component>()) {
-            Log.Info($"{new string(' ', depth * 2)}• {component.GetType().Name}");
+            Info($"{new string(' ', depth * 2)}• {component.GetType().Name}");
         }
     }
 
     internal static void PrintAllComponents(GameObject gameObject) {
-        Log.Info($"Components of [{gameObject}]:");
+        Info($"Components of [{gameObject}]:");
         PrintAllComponents(gameObject, 1);
     }
     internal static void PrintAllComponents(Transform transform) {
@@ -54,7 +53,7 @@ public static class Log {
             PrintAllComponents(transform.gameObject, depth + 1);
         }
         foreach(Transform child in transform) {
-            Log.Info($"{new string(' ', depth * 2)}○ {child.name}");
+            Info($"{new string(' ', depth * 2)}○ {child.name}");
             if(recursive) {
                 PrintAllChildren(child, depth + 1, recursive, components);
             }
@@ -62,7 +61,7 @@ public static class Log {
     }
 
     internal static void PrintAllChildren(Transform transform, bool recursive = false, bool components = false) {
-        Log.Info($"Children of [{transform}]:");
+        Info($"Children of [{transform}]:");
         PrintAllChildren(transform, 1, recursive, components);
     }
 

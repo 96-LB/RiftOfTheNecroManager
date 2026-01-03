@@ -184,27 +184,24 @@ public class RiftModsSettingsController : MonoBehaviour {
             return;
         }
         
-        var title = Util.PascalToSpaced(plugin.Metadata.Name);
-        if(plugin.Instance is RiftPluginInternal riftPlugin) {
-            title = riftPlugin.MenuName;
-        }
+        var title = RiftPluginInfo.Of(plugin).GetMenuName();
         var controller = Create(title, $"ModSettingsScreen - {plugin.Metadata.Name}");
         if(controller == null) {
             Log.Fatal($"Failed to create settings controller for mod {plugin.Metadata.Name}.");
             return;
         }
-
+        
         controller.AddAllConfigOptions(plugin);
-
+        
         var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab, true);
         button.name = $"TextButton - Mod - {plugin.Metadata.Name}";
-
+        
         button.OnSubmit += () => {
             OptionsObj?.SetActive(false);
             InputController?.Pipe(x => x.IsInputDisabled = true);
             controller.gameObject.SetActive(true);
         };
-
+        
         controller.OnClose += () => {
             if(!enabled) {
                 return;
@@ -216,12 +213,12 @@ public class RiftModsSettingsController : MonoBehaviour {
                 OptionsObj?.SetActive(true);
             });
         };
-
+        
         foreach(var label in button._textLabels) {
             Util.ForceSetText(label, title);
         }
         SetRectHeight(button, 60);
-
+        
         Descriptions[button] = $"{plugin.Metadata.GUID}\nv{plugin.Metadata.Version}";
     }
 
