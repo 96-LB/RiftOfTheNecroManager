@@ -183,8 +183,12 @@ public class RiftModsSettingsController : MonoBehaviour {
             Log.Fatal("Failed to add mod menu because OptionsGroup is null.");
             return;
         }
-
-        var controller = Create(Util.PascalToSpaced(plugin.Metadata.Name), $"ModSettingsScreen - {plugin.Metadata.Name}");
+        
+        var title = Util.PascalToSpaced(plugin.Metadata.Name);
+        if(plugin.Instance is RiftPluginInternal riftPlugin) {
+            title = riftPlugin.MenuName;
+        }
+        var controller = Create(title, $"ModSettingsScreen - {plugin.Metadata.Name}");
         if(controller == null) {
             Log.Fatal($"Failed to create settings controller for mod {plugin.Metadata.Name}.");
             return;
@@ -214,7 +218,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         };
 
         foreach(var label in button._textLabels) {
-            Util.ForceSetText(label, Util.PascalToSpaced(plugin.Metadata.Name));
+            Util.ForceSetText(label, title);
         }
         SetRectHeight(button, 60);
 
