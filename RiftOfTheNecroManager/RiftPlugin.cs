@@ -43,6 +43,7 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
     }
 }
 
+#pragma warning disable BepInEx001 // we don't want this to be a BepInEx plugin
 [BepInDependency(Plugin.GUID)]
 public abstract class RiftPlugin : RiftPluginInternal {
 }
