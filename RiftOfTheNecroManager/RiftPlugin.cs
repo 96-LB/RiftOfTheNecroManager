@@ -47,7 +47,7 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
     }
 }
 
-[BepInDependency(GUID)]
+[BepInDependency(NECROMANAGER_GUID)]
 public abstract class RiftPlugin : RiftPluginInternal {
-    public const string GUID = "com.lalabuff.necrodancer.necromanager";
+    public const string NECROMANAGER_GUID = "com.lalabuff.necrodancer.necromanager";
 }

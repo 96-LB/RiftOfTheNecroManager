@@ -3,7 +3,7 @@
 namespace RiftOfTheNecroManager;
 
 
-[BepInPlugin(RiftPlugin.GUID, "RiftOfTheNecroManager", "0.2.9")]
+[BepInPlugin(RiftPlugin.NECROMANAGER_GUID, "RiftOfTheNecroManager", "0.2.9")]
 [NecroManagerInfo(menuNameOverride: "Rift of the NecroManager")]
 public class Plugin : RiftPluginInternal {
 }
