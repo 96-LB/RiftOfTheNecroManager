@@ -16,7 +16,9 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
     
     protected void Awake() {
         var idString = $"{Metadata.Name} v{Metadata.Version} ({Metadata.GUID})";
-        
+        if(Metadata.GUID == RiftPlugin.NECROMANAGER_GUID) {
+            Util2.GetModInfo();
+        }
         try {
             var disableVersionCheck = Config.Bind("Version Control", "Disable Version Check", false, "[WARNING] Turning this on may cause bugs or crashes when the game updates.");
             if(!disableVersionCheck.Value) {

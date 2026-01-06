@@ -17,7 +17,7 @@ namespace RiftOfTheNecroManager.Scripts;
 
 
 public class RiftModsSettingsController : MonoBehaviour {
-    // TODO: maybe use a template class to hold these prefabs
+    // TODO: maybe use a template class to hold these prefabs. would simplify null checks
     public static RiftAccessibilitySettingsController? Template { get; private set; }
     public static TextButtonOption? TextButtonPrefab { get; private set; }
     public static ToggleOption? TogglePrefab { get; private set; }
