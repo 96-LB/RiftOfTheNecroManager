@@ -12,6 +12,8 @@ public class RiftPluginInfo : State<PluginInfo, RiftPluginInfo> {
     public NecroManagerInfoAttribute Attribute => attribute ??= NecroManagerInfoAttribute.GetAttribute(Instance.Instance.GetType());
     private NecroManagerInfoAttribute? attribute;
     
+    public bool Deactivated { get; set; }
+    
     public string GetMenuName() {
         var pluginName = Util.PascalToSpaced(Instance.Metadata.Name);
         var menuName = Attribute.MenuNameOverride;

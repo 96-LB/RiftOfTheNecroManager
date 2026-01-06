@@ -1,0 +1,18 @@
+using System.Collections.Generic;
+using Newtonsoft.Json;
+
+namespace RiftOfTheNecroManager;
+
+
+[JsonObject(MemberSerialization.Fields)]
+internal readonly struct JsonModInfo {
+    public readonly bool compatible;
+    
+    [JsonProperty("update_available")]
+    public readonly bool updateAvailable;
+}
+
+[JsonObject(MemberSerialization.Fields)]
+internal readonly struct JsonServerResponse {
+    public readonly Dictionary<string, JsonModInfo> mods;
+}
