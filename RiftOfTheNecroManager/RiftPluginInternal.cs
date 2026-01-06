@@ -18,7 +18,7 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
     
     private static Dictionary<string, RiftPluginInternal> LoadedPlugins { get; } = [];
     
-    protected internal static async void LoadAllMods() {
+    private protected static async void LoadAllMods() {
         var modInfo = await QueryModInfo();
         foreach(var (guid, info) in modInfo.mods) {
             if(!LoadedPlugins.TryGetValue(guid, out var plugin)) {
