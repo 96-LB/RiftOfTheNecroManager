@@ -20,7 +20,7 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
     
     internal void PerformVersionCheck(bool compatible, bool updateAvailable) {
         if(!compatible) {
-            var config = Config.Bind("Version Control", "Disable Version Check", false, "[WARNING] Turning this on may cause bugs or crashes when the game updates.");
+            var config = Config.Bind("Version Control", "Disable Version Check", false, "<color=#f1416d>[WARNING]</color> Turning this on may cause bugs or crashes when the game updates.");
             Metadata.Incompatible = true;
             
             if(!config.Value) {
