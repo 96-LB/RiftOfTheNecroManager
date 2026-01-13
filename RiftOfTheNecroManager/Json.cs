@@ -12,9 +12,13 @@ internal readonly struct JsonModInfo {
     
     [JsonProperty("update_available")]
     public readonly bool updateAvailable;
+    
+    public readonly string version;
 }
+
 
 [JsonObject(MemberSerialization.Fields)]
 internal readonly struct JsonServerResponse {
+    public readonly string version;
     public readonly Dictionary<string, JsonModInfo> mods;
 }

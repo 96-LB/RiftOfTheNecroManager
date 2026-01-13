@@ -4,17 +4,20 @@ using Newtonsoft.Json;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.Networking;
 
 namespace RiftOfTheNecroManager;
 
 
-[BepInPlugin(GUID, "RiftOfTheNecroManager", "0.2.9")]
-[NecroManagerInfo(menuNameOverride: NAME)]
+[BepInPlugin(GUID, NAME, "0.2.9")]
+[NecroManagerInfo(menuNameOverride: MENU_NAME)]
 internal partial class Plugin : RiftPluginInternal {
     public const string GUID = "com.lalabuff.necrodancer.necromanager";
-    public const string NAME = "Rift of the NecroManager";
+    public const string NAME = "RiftOfTheNecroManager";
+    public const string MENU_NAME = "Rift of the NecroManager";
     
     private Dictionary<string, RiftPluginInternal> LoadedPlugins { get; } = [];
     
@@ -23,7 +26,7 @@ internal partial class Plugin : RiftPluginInternal {
         OnPluginLoaded += plugin => {
             LoadedPlugins[plugin.Metadata.GUID] = plugin;
         };
-        Log.Message($"{NAME} is initializing...");
+        Log.Info($"{MENU_NAME} is initializing...");
         LoadAllMods(); // fire and forget
     }
     
@@ -34,7 +37,7 @@ internal partial class Plugin : RiftPluginInternal {
                 continue;
             }
             
-            plugin.PerformVersionCheck(info.compatible, info.updateAvailable);
+            plugin.PerformVersionCheck(info.version, info.compatible, info.updateAvailable);
             
             foreach(var dep in plugin.Info.Dependencies) {
                 if(!dep.Flags.HasFlag(BepInDependency.DependencyFlags.HardDependency)) {
@@ -75,31 +78,61 @@ internal partial class Plugin : RiftPluginInternal {
             modsData[plugin.Metadata.GUID] = plugin.Metadata.Version.ToString();
         }
         
+        Log.Info($"Retrieving mod info from the {MENU_NAME} server...");
         Util.SendJsonRequest("https://necrodancer.lalabuff.com/necromanager", data, request => {
-            try {
-                if(request.result == UnityWebRequest.Result.Success) {
-                    Log.Message(request.downloadHandler.text);
-                    var result = JsonConvert.DeserializeObject<JsonServerResponse>(request.downloadHandler.text);
+            if(request.result == UnityWebRequest.Result.Success) {
+                try {
+                    var info = request.downloadHandler.text;
+                    var result = JsonConvert.DeserializeObject<JsonServerResponse>(info);
+                    CacheResponseInfo(info);
+                    Log.Info($"Successfully retrieved mod info from the {MENU_NAME} server.");
                     tcs.TrySetResult(result);
-                    Log.Message($"Successfully retrieved mod data from the {NAME} server.");
-                    foreach(var (modId, modInfo) in result.mods) {
-                        Log.Message($"Mod {modId}: Compatible={modInfo.compatible}, UpdateAvailable={modInfo.updateAvailable}");
-                    }
                     return;
+                } catch(Exception e) {
+                    Log.Error($"Error occurred while retrieving info from the {MENU_NAME} server:");
+                    Log.Error(e);
                 }
-                Log.Error($"Failed to retrieve mod data from the {NAME} server. (Status: {request.responseCode})");
-                tcs.TrySetResult(new());
             }
-            catch(Exception e) {
-                Log.Error($"Error occurred while retrieving mod data from the {NAME} server:");
-                Log.Error(e);
-                tcs.TrySetResult(new());
-            }
-            finally {
-                request.Dispose();
-            }
+            
+            // fallback behavior on failure or error
+            Log.Error($"Failed to retrieve mod info from the {MENU_NAME} server. (Status: {request.responseCode})");
+            tcs.TrySetResult(LoadFallbackModInfo());
         });
         
         return await tcs.Task;
+    }
+    
+    private static void CacheResponseInfo(string json) {
+        var basePath = Path.Combine(Path.GetDirectoryName(Application.dataPath), NAME);
+        var cachePath = Path.Combine(basePath, "mod_info.json");
+        Directory.CreateDirectory(basePath);
+        try {
+            File.WriteAllText(cachePath, json);
+        } catch(Exception e) {
+            Log.Warning("Failed to cache mod info:");
+            Log.Warning(e);
+        }
+    }
+    
+    private static JsonServerResponse LoadFallbackModInfo() {
+        Log.Info("Attempting to load mod info from cache...");
+        
+        // TODO: instead of repeating this everywhere, provide this as a util for mods?
+        var basePath = Path.Combine(Path.GetDirectoryName(Application.dataPath), NAME);
+        var cachePath = Path.Combine(basePath, "mod_info.json");
+        try {
+            if(File.Exists(cachePath)) {
+                var json = File.ReadAllText(cachePath);
+                var result = JsonConvert.DeserializeObject<JsonServerResponse>(json);
+                Log.Info($"Successfully loaded mod info from cache.");
+                return result;
+            }
+        } catch(Exception e) {
+            Log.Warning("Failed to load mod info from cache:");
+            Log.Warning(e);
+        }
+        
+        Log.Fatal("Mod info could not be loaded. All mods will be assumed to be incompatible.");
+        return new();
     }
 }

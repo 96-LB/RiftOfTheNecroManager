@@ -90,7 +90,11 @@ internal static class Util {
         request.SetRequestHeader("Content-Type", "application/json");
         
         var operation = request.SendWebRequest();
-        operation.completed += delegate { onCompleted(request); };
+        operation.completed += delegate { try {
+            onCompleted(request);
+        } finally {
+            request.Dispose();
+        } };
         
         return operation;
     }

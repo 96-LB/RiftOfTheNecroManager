@@ -5,6 +5,7 @@ using HarmonyLib;
 
 namespace RiftOfTheNecroManager;
 
+
 public abstract partial class RiftPluginInternal : BaseUnityPlugin {
     internal Assembly Assembly => GetType().Assembly;
     public RiftPluginInfo Metadata => RiftPluginInfo.Of(Info);
@@ -18,7 +19,12 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
         OnPluginLoaded?.Invoke(this);
     }
     
-    internal void PerformVersionCheck(bool compatible, bool updateAvailable) {
+    internal void PerformVersionCheck(string version, bool compatible, bool updateAvailable) {
+        if(version != Metadata.Version) {
+            Logger.LogWarning($"{Metadata.InfoString} has a version mismatch in the mod info! This should only occur if you updated the mod and the mod info is being loaded from an out-of-date cache. Mod info version: {version}, actual version: {Metadata.Version}");
+            compatible = false;
+        }
+        
         if(!compatible) {
             var config = Config.Bind("Version Control", "Disable Version Check", false, "<color=#f1416d>[WARNING]</color> Turning this on may cause bugs or crashes when the game updates.");
             Metadata.Incompatible = true;
@@ -32,6 +38,7 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
         }
         if(updateAvailable) {
             Logger.LogMessage($"An update for this mod is available. Please download the latest version!");
+            Metadata.UpdateAvailable = true;
         }
     }
     
