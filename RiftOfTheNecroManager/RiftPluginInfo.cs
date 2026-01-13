@@ -8,11 +8,15 @@ public class RiftPluginInfo : State<PluginInfo, RiftPluginInfo> {
     public string Name => Instance.Metadata.Name;
     public string Version => Instance.Metadata.Version.ToString();
     public string GUID => Instance.Metadata.GUID;
+    public string InfoString => $"{Name} v{Version} ({GUID})";
     
     public NecroManagerInfoAttribute Attribute => attribute ??= NecroManagerInfoAttribute.GetAttribute(Instance.Instance.GetType());
     private NecroManagerInfoAttribute? attribute;
     
+    public bool IsNecroManagerPlugin => Instance.Instance is RiftPluginInternal;
     public bool Deactivated { get; set; }
+    public bool Incompatible { get; set; }
+    public bool UpdateAvailable { get; set; }
     
     public string GetMenuName() {
         var pluginName = Util.PascalToSpaced(Instance.Metadata.Name);

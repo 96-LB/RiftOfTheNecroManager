@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
 using Shared;
+using Shared.MenuOptions;
 using TicToc.Localization.Components;
 using TMPro;
 using UnityEngine;
@@ -44,9 +45,17 @@ internal static class Util {
         }
         label.SetText(text);
     }
-
+    
     public static void ForceSetText(GameObject obj, string text) {
         ForceSetText(obj.GetComponentInChildren<TMP_Text>(), text);
+    }
+    
+    public static void SetButtonColor(TextButtonOption button, Palette color) {
+        button._selectedTextColor = color.Primary;
+        button._unselectedTextColor = color.Dark;
+        foreach(var label in button._textLabels) {
+            label.color = button.IsSelected ? color.Primary : color.Dark;
+        }
     }
     
     public static void ScheduleForNextFrame(this MonoBehaviour obj, Action action) {

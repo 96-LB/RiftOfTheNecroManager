@@ -4,6 +4,8 @@ using Newtonsoft.Json;
 namespace RiftOfTheNecroManager;
 
 
+#pragma warning disable CS0649 // these fields are set via JSON deserialization
+
 [JsonObject(MemberSerialization.Fields)]
 internal readonly struct JsonModInfo {
     public readonly bool compatible;
