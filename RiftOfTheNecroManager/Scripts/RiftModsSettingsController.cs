@@ -217,18 +217,17 @@ public class RiftModsSettingsController : MonoBehaviour {
         
         foreach(var label in button._textLabels) {
             var text = title;
-            if(info.UpdateAvailable) {
-                text += "<color=#416df1>*</color>";
+            if(info.IsNecroManagerPlugin) {
+                text += "<voffset=0.2em><size=75%>";
+                text += info.Deactivated ? "<sprite=23 color=#f1416d>" // red x
+                    : info.Incompatible ? "<sprite=26 color=#f16d41>" // orange triangle
+                    : "<sprite=25 color=#6df141>"; // green square
+                text += "</size></voffset>";
+                if(info.UpdateAvailable) {
+                    text += "<sprite=6 color=#416df1>"; // blue sparkle
+                }
             }
             Util.ForceSetText(label, text);
-        }
-        
-        if(info.IsNecroManagerPlugin) {
-            Util.SetButtonColor(button,
-                info.Deactivated ? Palette.Red
-                : info.Incompatible ? Palette.Orange
-                : Palette.Green
-            );
         }
         
         SetRectHeight(button, 60);

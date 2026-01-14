@@ -50,7 +50,11 @@ internal static class SettingsMenuManagerPatch {
         foreach(var label in modsButton._textLabels) {
             Util.ForceSetText(label, "MODS");
         }
-        Util.SetButtonColor(modsButton, Palette.Green);
+        
+        // make it a different color than the other buttons
+        var color = new Color(196f / 255, 241f / 255, 65f / 255);
+        modsButton._selectedTextColor = color;
+        modsButton._unselectedTextColor = color.RGBMultiplied(0.5f);
         
         // add the button to the input controller and layout group as the penultimate option (before BACK)
         __instance._inputController.TryAddOption(modsButton, __instance._inputController.LastOptionIndex);
