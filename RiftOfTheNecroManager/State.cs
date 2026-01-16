@@ -5,18 +5,19 @@ namespace RiftOfTheNecroManager;
 
 public abstract class State<K, V> where V : State<K, V>, new() {
     private static readonly Dictionary<K, V> states = [];
-
-    public K Instance { get; private set; } = default!; // always construct with .Of or this can cause null refs
-
+    
+    public required K Instance { get; init; }
+    
     public static V Of(K obj) {
         if(!states.TryGetValue(obj, out V state)) {
-            state = states[obj] = new();
-            state.Instance = obj;
+            state = states[obj] = new() {
+                Instance = obj
+            };
         }
-
+        
         return state;
     }
-
+    
     public static IEnumerable<(K, V)> All() {
         foreach(var pair in states) {
             yield return (pair.Key, pair.Value);

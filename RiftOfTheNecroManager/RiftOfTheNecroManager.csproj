@@ -32,6 +32,7 @@
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="UnityEngine.Modules" Version="2021.3.43" IncludeAssets="compile" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="PolyShim" Version="2.5.0" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">

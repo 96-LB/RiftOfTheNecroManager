@@ -12,8 +12,8 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
     
     private protected static event Action<RiftPluginInternal>? OnPluginLoaded;
     
-    internal RiftPluginInternal() {
-        // internal prevents direct inheritance outside this assembly
+    private protected RiftPluginInternal() {
+        // private protected prevents direct inheritance outside this assembly
         // do not change access modifier
         Log.SetLog(Assembly, Logger);
         OnPluginLoaded?.Invoke(this);

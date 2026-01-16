@@ -1,6 +1,8 @@
 
 using System;
 
+namespace RiftOfTheNecroManager;
+
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public class NecroManagerInfoAttribute(string menuNameOverride = "") : Attribute {
