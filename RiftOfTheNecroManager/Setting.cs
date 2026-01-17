@@ -21,7 +21,7 @@ abstract public class Setting {
         settings.Add(this);
     }
     
-    internal static void BindAssembly(ConfigFile config, Assembly assembly) {
+    internal static void RegisterAssembly(ConfigFile config, Assembly assembly) {
         foreach(var type in assembly.GetTypes()) {
             RuntimeHelpers.RunClassConstructor(type.TypeHandle);
         }

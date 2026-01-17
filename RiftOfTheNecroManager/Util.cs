@@ -32,6 +32,19 @@ internal static class Util {
         return result.ToString();
     }
     
+    public static string RemoveWhitespace(string str) {
+        if(string.IsNullOrEmpty(str)) {
+            return str;
+        }
+        var result = new StringBuilder(str.Length);
+        foreach(char c in str) {
+            if(!char.IsWhiteSpace(c)) {
+                result.Append(c);
+            }
+        }
+        return result.ToString();
+    }
+    
     public static void ForceSetText(TMP_Text label, string text) {
         if(!label) {
             return;

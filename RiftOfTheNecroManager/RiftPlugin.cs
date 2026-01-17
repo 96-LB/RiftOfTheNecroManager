@@ -2,6 +2,7 @@
 using System.Reflection;
 using BepInEx;
 using HarmonyLib;
+using RiftOfTheNecroManager.BeatmapEvents;
 
 namespace RiftOfTheNecroManager;
 
@@ -57,7 +58,8 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
         try {
             var harmony = new Harmony(Metadata.GUID);
             harmony.PatchAll(Assembly);
-            Setting.BindAssembly(Config, Assembly);
+            Setting.RegisterAssembly(Config, Assembly);
+            CustomEvent.RegisterAssembly(Assembly, Metadata.Name);
             OnInit();
         } catch(Exception e) {
             DeactivateForError(e);

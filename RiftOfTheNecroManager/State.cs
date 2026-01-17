@@ -6,7 +6,7 @@ namespace RiftOfTheNecroManager;
 public abstract class State<K, V> where V : State<K, V>, new() {
     private static readonly Dictionary<K, V> states = [];
     
-    public required K Instance { get; init; }
+    public K Instance { get; init; } = default!; // always construct with .Of or this can cause null refs!
     
     public static V Of(K obj) {
         if(!states.TryGetValue(obj, out V state)) {
