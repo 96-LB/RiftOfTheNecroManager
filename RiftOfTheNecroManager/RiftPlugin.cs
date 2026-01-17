@@ -59,7 +59,7 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
             var harmony = new Harmony(Metadata.GUID);
             harmony.PatchAll(Assembly);
             Setting.RegisterAssembly(Config, Assembly);
-            CustomEvent.RegisterAssembly(Assembly, Metadata.Name);
+            CustomEvent.RegisterAssembly(Assembly, Metadata.GetCustomEventsName());
             OnInit();
         } catch(Exception e) {
             DeactivateForError(e);

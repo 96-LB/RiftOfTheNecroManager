@@ -32,29 +32,30 @@ public abstract class CustomEvent {
     }
     
     public static bool TryParse(BeatmapEvent beatmapEvent, [MaybeNullWhen(false)] out CustomEvent customEvent) {
-        var types = beatmapEvent.type.ToLowerInvariant().Split();
-        foreach(var type in types) {
+        var types = beatmapEvent.type.Split(); // do NOT make lowercase here, since we need to preserve case after matching
+        foreach(var casedType in types) {
+            var type = casedType.ToLowerInvariant();
             // first check all registered assemblies for matching prefix
             foreach(var assemblyInfo in Assemblies) {
                 var prefix = assemblyInfo.Prefix.ToLowerInvariant();
                 var strippedType = "";
                 if(type.StartsWith(prefix + ".")) {
-                    strippedType = type[(prefix.Length + 1)..];
+                    strippedType = casedType[(prefix.Length + 1)..];
                 }
                 else if(type.StartsWith(prefix + "::")) {
-                    strippedType = type[(prefix.Length + 2)..];
+                    strippedType = casedType[(prefix.Length + 2)..];
                 }
                 else {
                     continue;
                 }
                 if(TryParse(beatmapEvent, strippedType, assemblyInfo, out customEvent)) {
-                    customEvent.Type = type; // restore full type
+                    customEvent.Type = casedType; // restore full type
                     return true;
                 }
             }
             // then check all assemblies without prefix
             foreach(var assemblyInfo in Assemblies) {
-                if(TryParse(beatmapEvent, type, assemblyInfo, out customEvent)) {
+                if(TryParse(beatmapEvent, casedType, assemblyInfo, out customEvent)) {
                     return true;
                 }
             }

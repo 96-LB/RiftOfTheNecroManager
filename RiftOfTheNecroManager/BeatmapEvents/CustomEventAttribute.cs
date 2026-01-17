@@ -26,7 +26,7 @@ public class CustomEventAttribute(string type, CustomEventMatchMode matchMode = 
             _ => false
         };
         
-        if(lengthCheck) {
+        if(!lengthCheck) {
             return false;
         }
         

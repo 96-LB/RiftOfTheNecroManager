@@ -33,4 +33,10 @@ public class RiftPluginInfo : State<PluginInfo, RiftPluginInfo> {
             return pluginName;
         }
     }
+    
+    public string GetCustomEventsName() {
+        var pluginName = Util.RemoveWhitespace(Instance.Metadata.Name);
+        var eventsName = Util.RemoveWhitespace(Attribute.CustomEventsNameOverride);
+        return string.IsNullOrWhiteSpace(eventsName) ? pluginName : eventsName;
+    }
 }
