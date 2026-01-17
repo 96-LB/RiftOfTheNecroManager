@@ -4,7 +4,7 @@ namespace RiftOfTheNecroManager.BeatmapEvents;
 /// <summary>
 /// Defines the mode for matching custom event types to beatmap event types.
 /// </summary>
-public enum EventTypeMatchMode {
+public enum CustomEventMatchMode {
     /// <summary>
     /// Matches if the custom event type is a subtype of the beatmap event type,
     /// i.e., the beatmap event type is a suffix of the custom event type.

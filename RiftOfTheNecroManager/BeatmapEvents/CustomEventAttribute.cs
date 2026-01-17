@@ -5,10 +5,13 @@ namespace RiftOfTheNecroManager.BeatmapEvents;
 
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public class CustomEventAttribute(string type, EventTypeMatchMode matchMode = EventTypeMatchMode.Covariant) : Attribute {
+public class CustomEventAttribute(string type, CustomEventMatchMode matchMode = CustomEventMatchMode.Covariant, CustomEventFlags flags = CustomEventFlags.None) : Attribute {
     public string Type { get; } = Util.RemoveWhitespace(type);
     public string[] TypeSegments { get; } = Util.RemoveWhitespace(type).ToLowerInvariant().Split('.', StringSplitOptions.RemoveEmptyEntries);
-    public EventTypeMatchMode MatchMode { get; } = matchMode;
+    public CustomEventMatchMode MatchMode { get; } = matchMode;
+    public CustomEventFlags Flags { get; } = flags;
+    
+    public bool ShouldSkipBeat0 => (Flags & CustomEventFlags.SkipBeat0) != 0;
     
     public bool IsValid() => !string.IsNullOrWhiteSpace(Type);
     
@@ -16,10 +19,10 @@ public class CustomEventAttribute(string type, EventTypeMatchMode matchMode = Ev
         var eventType = type.ToLowerInvariant().Split('.', StringSplitOptions.RemoveEmptyEntries);
         
         var lengthCheck = MatchMode switch {
-            EventTypeMatchMode.Covariant => eventType.Length <= TypeSegments.Length,
-            EventTypeMatchMode.Invariant => eventType.Length == TypeSegments.Length,
-            EventTypeMatchMode.Contravariant => eventType.Length >= TypeSegments.Length,
-            EventTypeMatchMode.ContravariantStrict => eventType.Length > TypeSegments.Length,
+            CustomEventMatchMode.Covariant => eventType.Length <= TypeSegments.Length,
+            CustomEventMatchMode.Invariant => eventType.Length == TypeSegments.Length,
+            CustomEventMatchMode.Contravariant => eventType.Length >= TypeSegments.Length,
+            CustomEventMatchMode.ContravariantStrict => eventType.Length > TypeSegments.Length,
             _ => false
         };
         

@@ -97,11 +97,16 @@ public abstract class CustomEvent {
     
     // instance members
     
+    public float Beat => (float)BeatmapEvent.startBeatNumber;
+    
+    private CustomEventFlags? _flags;
+    public CustomEventFlags Flags => _flags ??= GetType().GetCustomAttribute<CustomEventAttribute>()?.Flags ?? CustomEventFlags.None;
+    
+    public bool ShouldSkipBeat0 => (Flags & CustomEventFlags.SkipBeat0) != 0;
+    
     public bool Valid { get; private set; }
     public BeatmapEvent BeatmapEvent { get; private set; }
     public string Type { get; private set; } = "";
-    
-    public float Beat => (float)BeatmapEvent.startBeatNumber;
     
     public string GetString(string key) {
         var value = BeatmapEvent.GetFirstEventDataAsString($"{Type}.{key}");
@@ -122,9 +127,10 @@ public abstract class CustomEvent {
         return Type != "";
     }
     
-    public virtual bool ShouldPreload(StageState stage) {
-        return stage.StartBeat <= Beat && Beat <= stage.EndBeat;
-    }
+    
+    public virtual bool ShouldPreload(StageState stage) => stage.StartBeat <= Beat && Beat <= stage.EndBeat && (!ShouldSkipBeat0 || stage.StartBeat < Beat);
+    
+    public virtual bool ShouldSkip(StageState stage) => Beat < stage.StartBeat || (ShouldSkipBeat0 && Beat <= stage.StartBeat);
     
     public abstract Task Preload(StageState stage);
     

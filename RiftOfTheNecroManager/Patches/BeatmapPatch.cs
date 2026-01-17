@@ -23,15 +23,15 @@ public class BeatmapState : State<RRBeatmapPlayer, BeatmapState> {
         var tasks = new List<Task>();
         CustomEvents = [.. CustomEvent.Enumerate(beatmaps).OrderBy(e => e.Beat)];
         foreach(var customEvent in CustomEvents) {
-            if(customEvent.ShouldPreload(Stage!)) {
-                tasks.Add(customEvent.Preload(Stage!));
+            if(customEvent.ShouldPreload(Stage)) {
+                tasks.Add(customEvent.Preload(Stage));
             }
         }
         
         await Task.WhenAll(tasks);
         
         foreach(var customEvent in CustomEvents) {
-            if(customEvent.Beat <= Stage.StartBeat) {
+            if(customEvent.ShouldSkip(Stage)) {
                 customEvent.Skip(Stage);
             } else {
                 UnprocessedEvents[customEvent.BeatmapEvent] = customEvent;
