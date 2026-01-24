@@ -20,7 +20,7 @@ public static class Log {
     
     internal static ManualLogSource SetLog(Assembly assembly, ManualLogSource logSource) => Logs[assembly] = logSource;
     
-    public static void AtLevel(LogLevel level, object message) => GetLog().Log(level, message.ToString());
+    public static void AtLevel(LogLevel level, object message) => GetLog().Log(level, message);
     public static void Debug(object message) => AtLevel(LogLevel.Debug, message);
     public static void Info(object message) => AtLevel(LogLevel.Info, message);
     public static void Message(object message) => AtLevel(LogLevel.Message, message);
