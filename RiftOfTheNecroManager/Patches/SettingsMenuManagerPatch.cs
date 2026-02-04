@@ -2,6 +2,7 @@
 using RiftOfTheNecroManager.Scripts;
 using Shared.MenuOptions;
 using Shared.Title;
+using Shared.TrackSelection;
 using UnityEngine;
 
 namespace RiftOfTheNecroManager.Patches;

@@ -28,49 +28,49 @@ public static class Log {
     public static void Error(object message) => AtLevel(LogLevel.Error, message);
     public static void Fatal(object message) => AtLevel(LogLevel.Fatal, message);
     
-    // utility methods TODO: move to debugutil
-    
-    private static void PrintAllComponents(GameObject gameObject, int depth = 1) {
-        foreach(var component in gameObject.GetComponents<Component>()) {
-            Info($"{new string(' ', depth * 2)}• {component.GetType().Name}");
-        }
-    }
-    
-    internal static void PrintAllComponents(GameObject gameObject) {
-        Info($"Components of [{gameObject}]:");
-        PrintAllComponents(gameObject, 1);
-    }
-    
-    internal static void PrintAllComponents(Transform transform) {
-        PrintAllComponents(transform.gameObject);
-    }
-    
-    internal static void PrintAllComponents(Component component) {
-        PrintAllComponents(component.gameObject);
-    }
-    
-    private static void PrintAllChildren(Transform transform, int depth, bool recursive = false, bool components = false) {
-        if(components) {
-            PrintAllComponents(transform.gameObject, depth + 1);
-        }
-        foreach(Transform child in transform) {
-            Info($"{new string(' ', depth * 2)}○ {child.name}");
-            if(recursive) {
-                PrintAllChildren(child, depth + 1, recursive, components);
+    public static class DebugUtil {
+        private static void PrintAllComponents(GameObject gameObject, int depth) {
+            foreach(var component in gameObject.GetComponents<Component>()) {
+                Info($"{new string(' ', depth * 2)}• {component.GetType().Name}");
             }
         }
-    }
-    
-    internal static void PrintAllChildren(Transform transform, bool recursive = false, bool components = false) {
-        Info($"Children of [{transform}]:");
-        PrintAllChildren(transform, 1, recursive, components);
-    }
-    
-    internal static void PrintAllChildren(GameObject gameObject, bool recursive = false, bool components = false) {
-        PrintAllChildren(gameObject.transform, recursive, components);
-    }
-    
-    internal static void PrintAllChildren(Component component, bool recursive = false, bool components = false) {
-        PrintAllChildren(component.gameObject, recursive, components);
+        
+        public static void PrintAllComponents(GameObject gameObject) {
+            Info($"Components of [{gameObject}]:");
+            PrintAllComponents(gameObject, 1);
+        }
+        
+        public static void PrintAllComponents(Transform transform) {
+            PrintAllComponents(transform.gameObject);
+        }
+        
+        public static void PrintAllComponents(Component component) {
+            PrintAllComponents(component.gameObject);
+        }
+        
+        private static void PrintAllChildren(Transform transform, int depth, bool recursive = false, bool components = false) {
+            if(components) {
+                PrintAllComponents(transform.gameObject, depth + 1);
+            }
+            foreach(Transform child in transform) {
+                Info($"{new string(' ', depth * 2)}○ {child.name}");
+                if(recursive) {
+                    PrintAllChildren(child, depth + 1, recursive, components);
+                }
+            }
+        }
+        
+        public static void PrintAllChildren(Transform transform, bool recursive = false, bool components = false) {
+            Info($"Children of [{transform}]:");
+            PrintAllChildren(transform, 1, recursive, components);
+        }
+        
+        public static void PrintAllChildren(GameObject gameObject, bool recursive = false, bool components = false) {
+            PrintAllChildren(gameObject.transform, recursive, components);
+        }
+        
+        public static void PrintAllChildren(Component component, bool recursive = false, bool components = false) {
+            PrintAllChildren(component.gameObject, recursive, components);
+        }
     }
 }

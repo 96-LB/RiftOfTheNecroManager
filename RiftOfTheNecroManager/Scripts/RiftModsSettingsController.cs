@@ -5,10 +5,12 @@ using FMODUnity;
 using Shared;
 using Shared.Audio;
 using Shared.MenuOptions;
+using Shared.RiftInput;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection.Emit;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -75,7 +77,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             Log.Fatal("Failed to load prefab for back button. This is usually loaded by cloning the back button from the accessibility settings menu.");
             return false;
         }
-
+        
         Template = template;
         TextButtonPrefab = accessibilityButton;
         TogglePrefab = togglePrefab;
@@ -284,7 +286,7 @@ public class RiftModsSettingsController : MonoBehaviour {
     public SelectableOption? AddConfigOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value) =>
         value switch {
             ConfigEntry<bool> val => AddToggleOption(plugin, key, val),
-            ConfigEntry<string> val => AddCarouselOption(plugin, key, val),
+            ConfigEntry<string> val => AddStringOrCarouselOption(plugin, key, val),
             _ when value.SettingType.IsEnum => AddCarouselOption(plugin, key, value, value.SettingType.GetEnumNames()),
             ConfigEntry<int> or ConfigEntry<float> => AddSliderOption(plugin, key, value),
             ConfigEntry<Color> val => AddColorOption(plugin, key, val),
@@ -314,10 +316,10 @@ public class RiftModsSettingsController : MonoBehaviour {
         return button;
     }
     
-    public CarouselOptionGroup? AddCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<string> value) =>
+    public SelectableOption? AddStringOrCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntry<string> value) =>
         value.Description.AcceptableValues switch {
             AcceptableValueList<string> vals => AddCarouselOption(plugin, key, value, vals.AcceptableValues),
-            _ => null
+            _ => AddStringOption(plugin, key, value)
         };
     
     public CarouselOptionGroup? AddCarouselOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value, string[] options) {
@@ -392,7 +394,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         
         return carousel;
     }
-
+    
     public SliderOption? AddSliderOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value) =>
         value.Description.AcceptableValues switch {
             AcceptableValueRange<int> val => AddSliderOption(plugin, key, value, val),
@@ -484,7 +486,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         Destroy(button); // keeps the GameObject, but not the SelectableOption
         return button;
     }
-
+    
     public TextButtonOption? AddPadding(PluginInfo plugin, float height = 10) {
         if(OptionsGroup == null) {
             Log.Fatal("Failed to add padding because OptionsGroup is null.");
@@ -553,7 +555,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             slider._valueId = channels[i];
             slider.HandleValueUpdated();
             Util.ForceSetText(slider._labelText, channels[i]);
-            SetRectHeight(slider, 30f);
+            SetRectHeight(slider, 30);
             Descriptions[slider] = value.Description.Description;
             
             sliders[i] = slider;
@@ -566,15 +568,121 @@ public class RiftModsSettingsController : MonoBehaviour {
         return header; // this is cursed
     }
     
+    public TextButtonOption? AddStringLabel(PluginInfo plugin, ConfigDefinition key) {
+        if(OptionsGroup == null) {
+            Log.Fatal("Failed to add string label because OptionsGroup is null.");
+            return null;
+        }
+        
+        if(!AllPrefabsLoaded) {
+            Log.Fatal("Failed to add string label because not all prefabs are loaded.");
+            return null;
+        }
+        
+        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab!, true);
+        button.name = $"Label - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key}";
+        
+        foreach(var label in button._textLabels) {
+            Util.ForceSetText(label, key.Key);
+        }
+        
+        SetRectHeight(button, 40);
+        
+        OptionsGroup.RemoveOption(button);
+        Destroy(button); // keeps the GameObject, but not the SelectableOption
+        return button;
+    }
+
+    
+    public TextButtonOption? AddStringOption(PluginInfo plugin, ConfigDefinition key, ConfigEntryBase value) {
+        if(OptionsGroup == null) {
+            Log.Fatal("Failed to add string option because OptionsGroup is null.");
+            return null;
+        }
+        
+        if(!AllPrefabsLoaded) {
+            Log.Fatal("Failed to add string option because not all prefabs are loaded.");
+            return null;
+        }
+        
+        var header = AddStringLabel(plugin, key);
+        
+        var button = (TextButtonOption)OptionsGroup.AddOptionFromPrefab(TextButtonPrefab, true);
+        button.name = $"String - Mod - {plugin.Metadata.Name} - {key.Section}.{key.Key}";
+        button._submitEventRef = Sfx.Confirm;
+        
+        void SetText(string str, bool blinker = false) {
+            static string Blinker(bool on) => $"<color=#{(on ? "d6f141" : "000000")}>|</color>";
+            var escaped = str.Replace("</noparse>", "<<i></i>/noparse>");
+            var text = $"{Blinker(false)}<noparse>{escaped}</noparse>{Blinker(blinker)}";
+            foreach(var label in button._textLabels) {
+                Util.ForceSetText(label, text);
+            }
+        }
+        
+        SetRectHeight(button, 35);
+        SetText(value.GetSerializedValue());
+        foreach(var label in button._textLabels) {
+            label.fontSize *= 0.5f;
+            label.fontSizeMin *= 0.5f;
+            label.fontSizeMax *= 0.5f;
+            label.fontStyle = FontStyles.Normal;
+        }
+        
+        button.OnSubmit += async () => {
+            InputController?.IsInputDisabled = true;
+            button._selectedIndicator.SetActive(false);
+            
+            var currentText = value.GetSerializedValue();
+            var blinker = true;
+            var startTime = Time.unscaledTime;
+            var keyboard = VirtualKeyboardProvider.Keyboard.Show(new() {
+                initialText = currentText,
+                updateCallback = update => {
+                    if (currentText.Length > update.text.Length) {
+                        AudioManager.Instance.PlayAudioEvent(Sfx.RemoveCharacter);
+                    } else if (currentText.Length < update.text.Length) {
+                        AudioManager.Instance.PlayAudioEvent(Sfx.AddCharacter);
+                    }
+                    currentText = update.text;
+                    SetText(currentText, blinker: blinker);
+                }
+            });
+            
+            while(!keyboard.IsCompleted) {
+                blinker = (Time.unscaledTime - startTime) % 1.5f < 0.75f;
+                SetText(currentText, blinker: blinker);
+                await GlobalTimer.NextTick();
+            }
+            
+            SetText(currentText, blinker: false);
+            InputController?.IsInputDisabled = false;
+            button._selectedIndicator.SetActive(true);
+            button.SetSubmitted(false);
+            
+            if(keyboard.Result.status == IVirtualKeyboard.ResultStatus.Confirmed) {
+                value.SetSerializedValue(currentText);
+                Log.Info($"Updated config [{key.Section}.{key.Key}] to \"{keyboard.Result.text}\".");
+                AudioManager.Instance.PlayAudioEvent(Sfx.Confirm);
+            } else {
+                AudioManager.Instance.PlayAudioEvent(Sfx.Cancel);
+            }
+        };
+        
+        
+        var footer = AddPadding(plugin);
+        
+        return header; // this is cursed
+    }
+    
+    
     public void Awake() {
         if(!Initialized) {
             Log.Error($"{nameof(RiftModsSettingsController)} should be created using static {nameof(Create)} method.");
             return;
         }
         
-        if(InputController != null) {
-            InputController.OnCloseInput += HandleCloseInput;
-        }
+        InputController?.OnCloseInput += HandleCloseInput;
     }
     
     public void Update() {
@@ -597,9 +705,7 @@ public class RiftModsSettingsController : MonoBehaviour {
     }
     
     public void OnDestroy() {
-        if(InputController != null) {
-            InputController.OnCloseInput -= HandleCloseInput;
-        }
+        InputController?.OnCloseInput -= HandleCloseInput;
     }
     
     public void OnEnable() {

@@ -18,5 +18,6 @@ public static class Config {
         public static Setting<int> SampleSlider { get; } = new(GROUP, "Sample Slider", 0, "Sample slider for integer values.", new AcceptableValueRange<int>(0, 100));
         public static Setting<float> SampleSliderFloat { get; } = new(GROUP, "Sample Float Slider", 0f, "Sample slider for floating point values.", new AcceptableValueRange<float>(0, 1));
         public static Setting<Color> SampleColor { get; } = new(GROUP, "Sample Color", new(), "Sample color picker.");
+        public static Setting<string> SampleText { get; } = new(GROUP, "Sample Text", "Hello, World!", "Sample text input.");
     }
 }
