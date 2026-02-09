@@ -103,9 +103,8 @@ internal partial class Plugin : RiftPluginInternal {
     }
     
     private static void CacheResponseInfo(string json) {
-        var basePath = Path.Combine(Path.GetDirectoryName(Application.dataPath), NAME);
-        var cachePath = Path.Combine(basePath, "mod_info.json");
-        Directory.CreateDirectory(basePath);
+        var cachePath = Path.Combine(PluginData.DataPath, "mod_info.json");
+        Directory.CreateDirectory(PluginData.DataPath);
         try {
             File.WriteAllText(cachePath, json);
         } catch(Exception e) {
@@ -117,9 +116,7 @@ internal partial class Plugin : RiftPluginInternal {
     private static JsonServerResponse LoadFallbackModInfo() {
         Log.Info("Attempting to load mod info from cache...");
         
-        // TODO: instead of repeating this everywhere, provide this as a util for mods?
-        var basePath = Path.Combine(Path.GetDirectoryName(Application.dataPath), NAME);
-        var cachePath = Path.Combine(basePath, "mod_info.json");
+        var cachePath = Path.Combine(PluginData.DataPath, "mod_info.json");
         try {
             if(File.Exists(cachePath)) {
                 var json = File.ReadAllText(cachePath);

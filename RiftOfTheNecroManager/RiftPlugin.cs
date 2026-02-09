@@ -16,7 +16,8 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
     private protected RiftPluginInternal() {
         // private protected prevents direct inheritance outside this assembly
         // do not change access modifier
-        Log.SetLog(Assembly, Logger);
+        PluginData.RegisterAssembly(Assembly, this); // might throw exception!
+        Log.RegisterAssembly(Assembly, Logger);
         OnPluginLoaded?.Invoke(this);
     }
     
@@ -58,7 +59,7 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
         try {
             var harmony = new Harmony(Metadata.GUID);
             harmony.PatchAll(Assembly);
-            Setting.RegisterAssembly(Config, Assembly);
+            Setting.RegisterAssembly(Assembly, Config);
             CustomEvent.RegisterAssembly(Assembly, Metadata.GetCustomEventsName());
             OnInit();
         } catch(Exception e) {
