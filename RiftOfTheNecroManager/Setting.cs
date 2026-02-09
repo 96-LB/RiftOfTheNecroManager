@@ -42,14 +42,13 @@ public class Setting<T>(string group, string key, T defaultValue, string descrip
     public string Key { get; } = key;
     public T DefaultValue { get; } = defaultValue;
     public ConfigDescription Description { get; } = new(description, acceptableValues, tags);
-
-
+    
     private ConfigEntry<T>? entry;
     public ConfigEntry<T> Entry => entry ?? throw new InvalidOperationException("Setting is not bound.");
-
+    
     public static implicit operator T(Setting<T> setting) => setting.Entry.Value;
     public static implicit operator ConfigEntry<T>(Setting<T> setting) => setting.Entry;
-
+    
     public override ConfigEntryBase Bind(ConfigFile config) {
         return entry = config.Bind(Group, Key, DefaultValue, Description);
     }

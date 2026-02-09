@@ -20,7 +20,7 @@ public class StageState : State<RRStageController, StageState> {
     public float EndBeat => Instance._isPracticeMode
         ? Instance._practiceModeEndBeatNumber
         : float.MaxValue;
-
+    
     public async Task Preload() {
         Beatmap.Stage = this;
         await Beatmap.Preload(Instance._beatmaps);

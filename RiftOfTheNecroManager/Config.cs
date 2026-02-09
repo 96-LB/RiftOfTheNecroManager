@@ -9,6 +9,7 @@ public enum SampleEnum {
     Baz
 }
 
+
 public static class Config {
     public static class Samples {
         const string GROUP = "Samples";

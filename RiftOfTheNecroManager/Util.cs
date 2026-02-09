@@ -14,7 +14,7 @@ using UnityEngine.Networking;
 namespace RiftOfTheNecroManager;
 
 
-internal static class Util {
+public static class Util {
     public static string GameVersion => BuildInfoHelper.Instance.BuildId.Split('-')[0];
     
     public static string PascalToSpaced(string str) {
