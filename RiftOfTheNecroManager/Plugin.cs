@@ -12,11 +12,11 @@ namespace RiftOfTheNecroManager;
 
 
 [BepInPlugin(GUID, NAME, VERSION)]
-[NecroManagerInfo(menuNameOverride: MENU_NAME)]
+[NecroManagerInfo(menuNameOverride: MENU_NAME, isBeta: true)]
 internal partial class Plugin : RiftPluginInternal {
     public const string GUID = "com.lalabuff.necrodancer.necromanager";
     public const string NAME = "RiftOfTheNecroManager";
-    public const string VERSION = "0.2.9";
+    public const string VERSION = "1.0.0";
     public const string MENU_NAME = "Rift of the NecroManager";
     
     private Dictionary<string, RiftPluginInternal> LoadedPlugins { get; } = [];
@@ -83,7 +83,8 @@ internal partial class Plugin : RiftPluginInternal {
         data["mods"] = modsData;
         
         foreach(var plugin in Chainloader.PluginInfos.Values) {
-            modsData[plugin.Metadata.GUID] = plugin.Metadata.Version.ToString();
+            var info = RiftPluginInfo.Of(plugin);
+            modsData[info.GUID] = info.Version;
         }
         
         Log.Info($"Retrieving mod info from the {MENU_NAME} server...");

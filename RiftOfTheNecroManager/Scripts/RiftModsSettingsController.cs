@@ -233,7 +233,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         
         SetRectHeight(button, 60);
         
-        var description = $"{plugin.Metadata.GUID}\nv{plugin.Metadata.Version}";
+        var description = $"{info.GUID}\nv{info.Version}";
         if(info.UpdateAvailable) {
             description += " (Update available!)";
         }

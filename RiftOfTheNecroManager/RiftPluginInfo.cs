@@ -6,9 +6,10 @@ namespace RiftOfTheNecroManager;
 
 public class RiftPluginInfo : State<PluginInfo, RiftPluginInfo> {
     public string Name => Instance.Metadata.Name;
-    public string Version => Instance.Metadata.Version.ToString();
+    public string Version => Instance.Metadata.Version + (IsBeta ? "-beta" : "");
     public string GUID => Instance.Metadata.GUID;
     public string InfoString => $"{Name} v{Version} ({GUID})";
+    public bool IsBeta => Attribute.IsBeta;
     
     public NecroManagerInfoAttribute Attribute => attribute ??= NecroManagerInfoAttribute.GetAttribute(Instance.Instance.GetType());
     private NecroManagerInfoAttribute? attribute;
