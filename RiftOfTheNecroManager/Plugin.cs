@@ -11,11 +11,12 @@ using UnityEngine.Networking;
 namespace RiftOfTheNecroManager;
 
 
-[BepInPlugin(GUID, NAME, "0.2.9")]
+[BepInPlugin(GUID, NAME, VERSION)]
 [NecroManagerInfo(menuNameOverride: MENU_NAME)]
 internal partial class Plugin : RiftPluginInternal {
     public const string GUID = "com.lalabuff.necrodancer.necromanager";
     public const string NAME = "RiftOfTheNecroManager";
+    public const string VERSION = "0.2.9";
     public const string MENU_NAME = "Rift of the NecroManager";
     
     private Dictionary<string, RiftPluginInternal> LoadedPlugins { get; } = [];
@@ -26,17 +27,19 @@ internal partial class Plugin : RiftPluginInternal {
             LoadedPlugins[plugin.Metadata.GUID] = plugin;
         };
         Log.Info($"{MENU_NAME} is initializing...");
+        RiftOfTheNecroManager.Config.VersionControl.AutomaticVersionControl.Bind(Config);
         LoadAllMods(); // fire and forget
     }
     
     private async void LoadAllMods() {
         var modInfo = await QueryModInfo();
-        foreach(var (guid, info) in modInfo.mods) {
-            if(!LoadedPlugins.TryGetValue(guid, out var plugin)) {
-                continue;
-            }
+        foreach(var (guid, plugin) in LoadedPlugins) {
+            var info = modInfo.mods?.GetValueOrDefault(guid);
+            var version = info?.version ?? plugin.Metadata.Version;
+            var compatible = info?.compatible ?? false;
+            var updateAvailable = info?.updateAvailable ?? false;
             
-            plugin.PerformVersionCheck(info.version, info.compatible, info.updateAvailable);
+            plugin.PerformVersionCheck(version, compatible, updateAvailable);
             
             foreach(var dep in plugin.Info.Dependencies) {
                 if(!dep.Flags.HasFlag(BepInDependency.DependencyFlags.HardDependency)) {
@@ -62,9 +65,15 @@ internal partial class Plugin : RiftPluginInternal {
     }
     
     private static async Task<JsonServerResponse> QueryModInfo() {
-        var tcs = new TaskCompletionSource<JsonServerResponse>();
-        
         await GlobalTimer.NextTick(); // wait for other plugins to load
+        
+        var versionControl = RiftOfTheNecroManager.Config.VersionControl.AutomaticVersionControl;
+        if(versionControl != VersionControlOption.Automatic) {
+            Log.Warning("Automatic version control is disabled. Mod compatibility info might be outdated or incorrect.");
+            return versionControl == VersionControlOption.Manual ? LoadFallbackModInfo() : new();
+        }
+        
+        var tcs = new TaskCompletionSource<JsonServerResponse>();
         
         var data = new Dictionary<string, object>();
         var gameVersion = Util.GameVersion;

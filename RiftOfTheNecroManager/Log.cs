@@ -12,6 +12,7 @@ public static class Log {
     internal static ManualLogSource GetLog() {
         var assembly = Util.GetCallingAssembly(typeof(Log));
         if(!Logs.TryGetValue(assembly, out var logSource)) {
+            Warning($"Unknown log source for assembly {assembly.GetName().Name ?? "Unknown"}. A new log source will be created.");
             logSource = BepInEx.Logging.Logger.CreateLogSource(assembly.GetName().Name ?? "Unknown");
             Logs[assembly] = logSource;
         }

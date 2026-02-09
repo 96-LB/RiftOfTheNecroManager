@@ -20,5 +20,5 @@ internal readonly struct JsonModInfo {
 [JsonObject(MemberSerialization.Fields)]
 internal readonly struct JsonServerResponse {
     public readonly string version;
-    public readonly Dictionary<string, JsonModInfo> mods;
+    public readonly Dictionary<string, JsonModInfo>? mods;
 }

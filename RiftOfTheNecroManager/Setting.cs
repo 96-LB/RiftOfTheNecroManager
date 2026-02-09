@@ -8,6 +8,8 @@ namespace RiftOfTheNecroManager;
 
 
 abstract public class Setting {
+    public const string WARNING = "<color=#f1416d>[WARNING]</color>";
+    
     protected static Dictionary<Assembly, List<Setting>> SettingsByAssembly { get; } = [];
     public Assembly Assembly { get; }
 
