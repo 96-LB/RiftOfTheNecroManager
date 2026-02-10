@@ -22,7 +22,7 @@ public static class PluginData {
     public static Assembly Assembly => Type.Assembly;
     
     public static RiftPluginInternal GetPlugin(Assembly? assembly = null) {
-        assembly ??= Util.GetCallingAssembly(typeof(RiftPluginInternal));
+        assembly ??= Util.GetCallingAssembly(typeof(PluginData));
         if(PluginsByAssembly.TryGetValue(assembly, out var plugin)) {
             return plugin;
         }
