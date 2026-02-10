@@ -1,4 +1,13 @@
-# Changelog
+﻿# Changelog
+
+## 🧪 v1.0.0-beta - 10 February 2026
+- Replaced the version check with an automatic version control system which retrieves up-to-date information about mod compatibility. This means that new releases no longer have to be created when the game updates if there are no breaking changes.
+- Provided a library which provides various useful utilities for other mods, including:
+  - Automatic integration with the new version control system.
+  - Customization of the mod's appearance in the settings menu (currently only supports overriding the inferred spacing in the mod's name).
+  - Utilities for creating config options, logging, and retrieving plugin metadata.
+  - A system for handling custom beatmap events and preventing conflicts with other mods.
+- Configuration options of string type now render in the settings menu as text input fields.
 
 ## v0.2.9 - 10 December 2025
 Updated game version. Compatible with Patch 1.11.1.
