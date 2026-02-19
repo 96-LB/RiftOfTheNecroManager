@@ -12,7 +12,7 @@ namespace RiftOfTheNecroManager;
 
 
 [BepInPlugin(GUID, NAME, VERSION)]
-[NecroManagerInfo(menuNameOverride: MENU_NAME, isBeta: true)]
+[NecroManagerInfo(menuNameOverride: MENU_NAME)]
 internal partial class Plugin : RiftPluginInternal {
     public const string GUID = "com.lalabuff.necrodancer.necromanager";
     public const string NAME = "RiftOfTheNecroManager";
