@@ -1,5 +1,8 @@
 ﻿# Changelog
 
+## v1.0.1 - 20 February 2026
+- Fixed a bug which caused custom events to sometimes be ignored if another custom event existed with the same type and beat.
+
 ## v1.0.0 - 19 February 2026
 - Replaced the version check with an automatic version control system which retrieves up-to-date information about mod compatibility. This means that new releases no longer have to be created when the game updates if there are no breaking changes.
 - Provided a library which provides various useful utilities for other mods, including:

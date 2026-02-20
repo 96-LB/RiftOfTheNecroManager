@@ -16,7 +16,7 @@ namespace RiftOfTheNecroManager;
 internal partial class Plugin : RiftPluginInternal {
     public const string GUID = "com.lalabuff.necrodancer.necromanager";
     public const string NAME = "RiftOfTheNecroManager";
-    public const string VERSION = "1.0.0";
+    public const string VERSION = "1.0.1";
     public const string MENU_NAME = "Rift of the NecroManager";
     
     private Dictionary<string, RiftPluginInternal> LoadedPlugins { get; } = [];
