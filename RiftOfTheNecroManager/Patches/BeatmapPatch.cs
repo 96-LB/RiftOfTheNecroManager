@@ -10,9 +10,12 @@ namespace RiftOfTheNecroManager.Patches;
 
 
 public class BeatmapState : State<RRBeatmapPlayer, BeatmapState> {
+    // we pair the beatmap event and its data dict to avoid hashing issues on the beatmap struct
+    private record Event(BeatmapEvent BeatmapEvent, Dictionary<string, List<string>> Data);
+    
     public StageState? Stage { get; internal set; }
-    public CustomEvent[] CustomEvents { get; private set; } = [];
-    public Dictionary<BeatmapEvent, CustomEvent> UnprocessedEvents { get; } = [];
+    private CustomEvent[] CustomEvents { get; set; } = [];
+    private Dictionary<Event, CustomEvent> UnprocessedEvents { get; } = [];
     
     public async Task Preload(IEnumerable<Beatmap> beatmaps) {
         if(Stage == null) {
@@ -34,7 +37,8 @@ public class BeatmapState : State<RRBeatmapPlayer, BeatmapState> {
             if(customEvent.ShouldSkip(Stage)) {
                 customEvent.Skip(Stage);
             } else {
-                UnprocessedEvents[customEvent.BeatmapEvent] = customEvent;
+                var beatmapEvent = customEvent.BeatmapEvent;
+                UnprocessedEvents[new(beatmapEvent, beatmapEvent._data)] = customEvent;
             }
         }
     }
@@ -44,9 +48,10 @@ public class BeatmapState : State<RRBeatmapPlayer, BeatmapState> {
             return;
         }
         
-        if(UnprocessedEvents.TryGetValue(beatEvent, out var customEvent)) {
+        var eventData = new Event(beatEvent, beatEvent._data);
+        if(UnprocessedEvents.TryGetValue(eventData, out var customEvent)) {
             customEvent.Process(Stage);
-            UnprocessedEvents.Remove(beatEvent);
+            UnprocessedEvents.Remove(eventData);
         }
     }
     
