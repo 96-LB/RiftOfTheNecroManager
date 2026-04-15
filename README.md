@@ -1,5 +1,5 @@
 # Rift of the NecroManager
-This project is a mod for Rift of the NecroDancer which adds a settings menu for viewing and configuring BepInEx mods. Supported configuration options can be modified directly in-game without the need to manually edit hard-to-manage configuration files.
+This project is an unofficial mod manager for Rift of the NecroDancer. In addition to providing a centralised version control system and other utilities for mod developers, it adds a settings menu for viewing and configuring installed BepInEx mods. Supported configuration options can be modified directly in-game without the need to manually edit hard-to-manage configuration files.
 
 > [!WARNING]
 > BepInEx mods are <ins>**not officially supported**</ins> by Rift of the NecroDancer. If you encounter any issues with this mod, please open an issue on this GitHub repository, and do not submit reports to Brace Yourself Games!
