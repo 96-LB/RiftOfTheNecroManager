@@ -668,6 +668,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             }
         };
         
+        Descriptions[button] = value.Description.Description;
         
         var footer = AddPadding(plugin);
         
