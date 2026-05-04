@@ -723,7 +723,6 @@ public class RiftModsSettingsController : MonoBehaviour {
     public void HandleCloseInput() {
         OnClose?.Invoke();
         InputController?.SetSelectionIndex(0);
-        throw new UnityException("marukyu is sad... 16");
     }
     
     public void PlayCancelSfx() {
