@@ -8,7 +8,7 @@ namespace RiftOfTheNecroManager;
 
 
 abstract public class Setting {
-    public const string WARNING = "<color=#f1416d>[WARNING]</color>";
+    public static string Warning { get; } = ColorText.Red.Text("[WARNING]");
     
     protected static Dictionary<Assembly, List<Setting>> SettingsByAssembly { get; } = [];
     public Assembly Assembly { get; }

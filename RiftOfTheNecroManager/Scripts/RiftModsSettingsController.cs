@@ -220,12 +220,12 @@ public class RiftModsSettingsController : MonoBehaviour {
             var text = title;
             if(info.IsNecroManagerPlugin) {
                 text += "<voffset=0.2em><size=75%>";
-                text += info.Deactivated ? "<sprite=23 color=#f1416d>" // red x
-                    : info.Incompatible ? "<sprite=26 color=#f16d41>" // orange triangle
-                    : "<sprite=25 color=#6df141>"; // green square
+                text += info.Deactivated ? $"<sprite=23 color={ColorText.Red}>" // x
+                    : info.Incompatible ? $"<sprite=26 color={ColorText.Orange}>" // orange triangle
+                    : $"<sprite=25 color={ColorText.Green}>"; // green square
                 text += "</size></voffset>";
                 if(info.UpdateAvailable) {
-                    text += "<sprite=6 color=#416df1>"; // blue sparkle
+                    text += $"<sprite=6 color={ColorText.Blue}>"; // blue sparkle
                 }
             }
             Util.ForceSetText(label, text);

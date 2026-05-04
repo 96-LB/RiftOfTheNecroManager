@@ -52,7 +52,7 @@ internal static class SettingsMenuManagerPatch {
         }
         
         // make it a different color than the other buttons
-        var color = new Color(196f / 255, 241f / 255, 65f / 255);
+        var color = ColorText.Green.Color;
         modsButton._selectedTextColor = color;
         modsButton._unselectedTextColor = color.RGBMultiplied(0.5f);
         

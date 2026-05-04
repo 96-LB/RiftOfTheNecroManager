@@ -49,7 +49,7 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
         }
         
         if(!compatible) {
-            var config = Config.Bind("Version Control", "Disable Version Check", false, $"{Setting.WARNING} Turning this on may cause bugs or crashes when the game updates.");
+            var config = Config.Bind("Version Control", "Disable Version Check", false, $"{Setting.Warning} Turning this on may cause bugs or crashes when the game updates.");
             Metadata.Incompatible = true;
             
             if(!config.Value) {
