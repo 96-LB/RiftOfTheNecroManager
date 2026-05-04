@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using BepInEx;
 using HarmonyLib;
@@ -49,10 +50,12 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
         }
         
         if(!compatible) {
-            var config = Config.Bind("Version Control", "Disable Version Check", false, $"{Setting.Warning} Turning this on may cause bugs or crashes when the game updates.");
             Metadata.Incompatible = true;
             
-            if(!config.Value) {
+            var overrideVersionCheck = Config.Bind("Version Control", "Override Version Check", false, $"{Setting.Warning} Turning this on may cause bugs or crashes when the game updates.");
+            var allowedVersions = Config.Bind("Version Control", "Allowed Versions", "0.0.0,0.0.1", $"List of game versions on which to enable the mod when version check is overriden, separated by commas.");
+            var versionList = allowedVersions.Value.Split(',').Select(x => x.Trim());
+            if(!overrideVersionCheck.Value || !versionList.Contains(Util.GameVersion)) {
                 Metadata.Deactivated = true;
                 Log.Fatal($"{Metadata.InfoString} has been deactivated because it is not known to be compatible with the current version of the game ({Util.GameVersion}).");
             } else {
