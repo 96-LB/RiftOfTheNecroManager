@@ -33,7 +33,7 @@ public static class DebugObjectSetterPatch {
                 text.text += ColorText.Blue.Text($"\n{numUpdates} UPDATES AVAILABLE!");
             }
             
-            if(!PluginData.Metadata.UpdateAvailable) {
+            if(PluginData.Metadata.UpdateAvailable) {
                 text.text += ColorText.Red.Text($"\n<size=1.8em>PLEASE UPDATE RIFT OF THE NECROMANAGER OR YOUR MODS MAY STOP WORKING SOON!");
                 text.text += ColorText.Clear.Text($"<size=1em>  im thinking miku miku oo ee oo  ");
             }
