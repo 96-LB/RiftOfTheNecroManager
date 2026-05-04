@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>RiftOfTheNecroManager</AssemblyName>
     <Product>RiftOfTheNecroManager</Product>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -15,7 +15,7 @@
     </RestoreAdditionalProjectSources>
     <RootNamespace>RiftOfTheNecroManager</RootNamespace>
 	<Authors>96 LB</Authors>
-	<Description>Rift of the NecroDancer mod which adds a settings menu for configuring other mods</Description>
+	<Description>Mod manager for Rift of the NecroDancer mods built on BepInEx</Description>
 	<PackageProjectUrl></PackageProjectUrl>
 	<RepositoryUrl>https://github.com/96-LB/RiftOfTheNecroManager</RepositoryUrl>
 	<PackageReadmeFile>README.md</PackageReadmeFile>

@@ -1,5 +1,13 @@
 ﻿# Changelog
 
+## v1.1.0 - 5 May 2026
+⚠️ **This release contains breaking changes.**
+- Added a display on the main menu when mods are active or updates are available.
+- Disabled error reporting telemetry when mods are active.
+- ⚠️ Renamed 'Disable Version Check' option to 'Override Version Check' in order to turn the setting off for all users.
+- ⚠️ In addition to overriding the version check, the 'Allowed Versions' setting must be configured in order to enable incompatible mods.
+- Fixed a bug which prevented text input settings from displaying descriptions in the settings menu.
+
 ## v1.0.1 - 20 February 2026
 - Fixed a bug which caused custom events to sometimes be ignored if another custom event existed with the same type and beat.
 
