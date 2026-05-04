@@ -3,6 +3,8 @@ using System.Reflection;
 using BepInEx;
 using HarmonyLib;
 using RiftOfTheNecroManager.BeatmapEvents;
+using RiftOfTheNecroManager.Patches;
+using Shared;
 
 namespace RiftOfTheNecroManager;
 
@@ -11,14 +13,28 @@ public abstract partial class RiftPluginInternal : BaseUnityPlugin {
     internal Assembly Assembly => GetType().Assembly;
     public RiftPluginInfo Metadata => RiftPluginInfo.Of(Info);
     
+    private static bool IsBugSplatDisabled { get; set; } = false;
     private protected static event Action<RiftPluginInternal>? OnPluginLoaded;
     
     private protected RiftPluginInternal() {
         // private protected prevents direct inheritance outside this assembly
         // do not change access modifier
+        DisableBugSplat(); // make sure this runs before anything else happens in case necromanager fails to initialize!
         PluginData.RegisterAssembly(Assembly, this); // might throw exception!
         Log.RegisterAssembly(Assembly, Logger);
         OnPluginLoaded?.Invoke(this);
+    }
+    
+    private static void DisableBugSplat() {
+        if(IsBugSplatDisabled) {
+            return;
+        }
+        
+        IsBugSplatDisabled = true;
+        var harmony = new Harmony("BUGSPLAT");
+        var original = typeof(BugSplatAccessor).GetMethod(nameof(BugSplatAccessor.Start), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        var prefix = typeof(BugsplatPatch).GetMethod(nameof(BugsplatPatch.Start));
+        harmony.Patch(original, prefix: new(prefix));
     }
     
     internal void PerformVersionCheck(string version, bool compatible, bool updateAvailable) {

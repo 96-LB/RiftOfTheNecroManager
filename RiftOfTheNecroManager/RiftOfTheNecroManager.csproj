@@ -43,6 +43,9 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>lib\RiftOfTheNecroDancer.dll</HintPath>
     </Reference>
+    <Reference Include="BugSplat.Unity.Runtime">
+      <HintPath>lib\BugSplat.Unity.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="FMODUnity">
       <HintPath>lib\FMODUnity.dll</HintPath>
     </Reference>
