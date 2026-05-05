@@ -19,7 +19,7 @@ Rift of the NecroManager runs on BepInEx 5. In order to use this mod, you must f
 2. Expand the "Assets" tab at the bottom and download `BepInEx_win_x64_5.X.Y.Z.zip`.
 
 > [!IMPORTANT]
-> Download the 64-bit Windows version even if you use a different operating system!, download `BepInEx_win_x64_5.X.Y.Z.zip`.
+> Download the 64-bit Windows version even if you use a different operating system!
 
 3. Extract the contents of the `.zip` file into your Rift of the NecroDancer game folder.
 
