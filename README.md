@@ -48,7 +48,7 @@ Rift of the NecroManager runs on BepInEx 5. In order to use this mod, you must f
 > [!TIP]
 > You can find this folder by right clicking on the game in your Steam library and clicking 'Properties'. Then navigate to 'Installed Files' and click 'Browse'.
 
-4. Check that your mod is working by launching the game and opening the settings menu. You should see a new button labeled 'MODS'.
+4. Check that your mod is working by launching the game. You should see green text on the main menu which says "MODS ACTIVE" in the bottom right corner.
 
 ## Usage
 
