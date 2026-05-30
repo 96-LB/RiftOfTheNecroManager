@@ -10,7 +10,7 @@ using Shared;
 namespace RiftOfTheNecroManager;
 
 
-public abstract partial class RiftPluginInternal : BaseUnityPlugin {
+public abstract class RiftPluginInternal : BaseUnityPlugin {
     internal Assembly Assembly => GetType().Assembly;
     public RiftPluginInfo Metadata => RiftPluginInfo.Of(Info);
     
