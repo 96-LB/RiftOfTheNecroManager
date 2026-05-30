@@ -27,10 +27,10 @@ public static class DebugObjectSetterPatch {
             
             text.enableAutoSizing = false;
             text.alignment = TextAlignmentOptions.TopRight;
-            text.text = ColorText.Green.Text($"{numMods} MODS ACTIVE");
+            text.text = ColorText.Green.Text($"{numMods} MOD{(numMods != 1 ? "S" : "")} ACTIVE");
             text.enableWordWrapping = false;
             if(numUpdates > 0) {
-                text.text += ColorText.Blue.Text($"\n{numUpdates} UPDATES AVAILABLE!");
+                text.text += ColorText.Blue.Text($"\n{numUpdates} UPDATE{(numUpdates != 1 ? "S" : "")} AVAILABLE!");
             }
             
             if(PluginData.Metadata.UpdateAvailable) {
