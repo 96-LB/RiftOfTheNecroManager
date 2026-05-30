@@ -31,6 +31,8 @@ public static class DebugObjectSetterPatch {
             text.enableWordWrapping = false;
             if(numUpdates > 0) {
                 text.text += ColorText.Blue.Text($"\n{numUpdates} UPDATE{(numUpdates != 1 ? "S" : "")} AVAILABLE!");
+            } else {
+                text.text = "\n" + text.text;
             }
             
             if(PluginData.Metadata.UpdateAvailable) {
