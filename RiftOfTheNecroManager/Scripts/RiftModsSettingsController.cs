@@ -235,7 +235,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         
         var description = $"{info.GUID}\nv{info.Version}";
         if(info.UpdateAvailable) {
-            description += " (Update available!)";
+            description += ColorText.Blue.Text(" (Update available!)");
         }
         Descriptions[button] = description;
     }
