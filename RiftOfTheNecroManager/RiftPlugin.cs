@@ -26,11 +26,11 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
         // private protected prevents direct inheritance outside this assembly
         // do not change access modifier
         DisableBugSplat(); // make sure this runs before anything else happens in case necromanager fails to initialize!
+        gameObject.hideFlags = HideFlags.HideAndDontSave; // this prevents the BepInEx manager object from getting destroyed by the game
         PluginData.RegisterAssembly(Assembly, this); // might throw exception!
         Log.RegisterAssembly(Assembly, Logger);
         OnPluginLoaded?.Invoke(this);
         Harmony = new(Metadata.GUID);
-        gameObject.hideFlags = HideFlags.HideAndDontSave;
     }
     
     private static void DisableBugSplat() {
