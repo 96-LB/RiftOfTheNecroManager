@@ -37,4 +37,8 @@ public static class PluginData {
         }
         PluginsByAssembly[assembly] = plugin;
     }
+    
+    internal static bool UnregisterAssembly(Assembly assembly) {
+        return PluginsByAssembly.Remove(assembly);
+    }
 }

@@ -27,8 +27,12 @@ public abstract class CustomEvent {
             .Where(tuple => (tuple.Item2?.IsValid() ?? false) && tuple.Item3 != null)
             .Select(tuple => new EventInfo(tuple.type, tuple.Item2, tuple.Item3))
             .ToArray();
-            
+        
         Assemblies.Add(new(assembly, prefix, types));
+    }
+    
+    internal static bool UnregisterAssembly(Assembly assembly) {
+        return Assemblies.Remove(Assemblies.FirstOrDefault(a => a.Assembly == assembly));
     }
     
     public static bool TryParse(BeatmapEvent beatmapEvent, [MaybeNullWhen(false)] out CustomEvent customEvent) {

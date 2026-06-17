@@ -19,7 +19,8 @@ public static class Log {
         return logSource;
     }
     
-    internal static ManualLogSource RegisterAssembly(Assembly assembly, ManualLogSource logSource) => Logs[assembly] = logSource;
+    internal static void RegisterAssembly(Assembly assembly, ManualLogSource logSource) => Logs[assembly] = logSource;
+    internal static bool UnregisterAssembly(Assembly assembly) => Logs.Remove(assembly);
     
     public static void AtLevel(LogLevel level, object message) => GetLog().Log(level, message);
     public static void Debug(object message) => AtLevel(LogLevel.Debug, message);

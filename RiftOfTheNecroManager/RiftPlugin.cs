@@ -11,11 +11,15 @@ namespace RiftOfTheNecroManager;
 
 
 public abstract class RiftPluginInternal : BaseUnityPlugin {
-    internal Assembly Assembly => GetType().Assembly;
     public RiftPluginInfo Metadata => RiftPluginInfo.Of(Info);
+    internal Assembly Assembly => GetType().Assembly;
+    protected Harmony Harmony { get; }
+    
     
     private static bool IsBugSplatDisabled { get; set; } = false;
+    private static Harmony BugsplatPatcher { get; } = new("BUGSPLAT"); 
     private protected static event Action<RiftPluginInternal>? OnPluginLoaded;
+    private protected static event Action<RiftPluginInternal>? OnPluginUnloaded;
     
     private protected RiftPluginInternal() {
         // private protected prevents direct inheritance outside this assembly
@@ -24,6 +28,7 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
         PluginData.RegisterAssembly(Assembly, this); // might throw exception!
         Log.RegisterAssembly(Assembly, Logger);
         OnPluginLoaded?.Invoke(this);
+        Harmony = new(Metadata.GUID);
     }
     
     private static void DisableBugSplat() {
@@ -32,10 +37,9 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
         }
         
         IsBugSplatDisabled = true;
-        var harmony = new Harmony("BUGSPLAT");
         var original = typeof(BugSplatAccessor).GetMethod(nameof(BugSplatAccessor.Start), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         var prefix = typeof(BugsplatPatch).GetMethod(nameof(BugsplatPatch.Start));
-        harmony.Patch(original, prefix: new(prefix));
+        BugsplatPatcher.Patch(original, prefix: new(prefix));
     }
     
     internal void PerformVersionCheck(string version, bool compatible, bool updateAvailable) {
@@ -80,9 +84,13 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
     }
     
     internal void Initialize() {
+        if(PluginData.GetPlugin(Assembly) != this) {
+            Log.Error("Tried to initialize plugin that is not registered. If this happens, something is very wrong.");
+            return;
+        }
+        
         try {
-            var harmony = new Harmony(Metadata.GUID);
-            harmony.PatchAll(Assembly);
+            Harmony.PatchAll(Assembly);
             Setting.RegisterAssembly(Assembly, Config);
             CustomEvent.RegisterAssembly(Assembly, Metadata.GetCustomEventsName());
             OnInit();
@@ -91,7 +99,21 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
         }
     }
     
+    internal void OnDestroy() {
+        Harmony.UnpatchSelf();
+        if(PluginData.GetPlugin(Assembly) == this) {
+            PluginData.UnregisterAssembly(Assembly);
+            Log.UnregisterAssembly(Assembly);
+            Setting.UnregisterAssembly(Assembly);
+            CustomEvent.UnregisterAssembly(Assembly);
+            OnPluginUnloaded?.Invoke(this);
+        }
+        OnUnload();
+    }
+    
     protected virtual void OnInit() { }
+    
+    protected virtual void OnUnload() { }
 }
 
 

@@ -12,14 +12,14 @@ abstract public class Setting {
     
     protected static Dictionary<Assembly, List<Setting>> SettingsByAssembly { get; } = [];
     public Assembly Assembly { get; }
-
+    
     public Setting(Assembly assembly) {
         Assembly = assembly;
-
+        
         if(!SettingsByAssembly.TryGetValue(Assembly, out var settings)) {
             SettingsByAssembly[Assembly] = settings = [];
         }
-
+        
         settings.Add(this);
     }
     
@@ -27,14 +27,18 @@ abstract public class Setting {
         foreach(var type in assembly.GetTypes()) {
             RuntimeHelpers.RunClassConstructor(type.TypeHandle);
         }
-
+        
         if(SettingsByAssembly.TryGetValue(assembly, out var settings)) {
             foreach(var setting in settings) {
                 setting.Bind(config);
             }
         }
     }
-
+    
+    internal static bool UnregisterAssembly(Assembly assembly) {
+        return SettingsByAssembly.Remove(assembly);
+    }
+    
     public abstract ConfigEntryBase Bind(ConfigFile config);
 }
 

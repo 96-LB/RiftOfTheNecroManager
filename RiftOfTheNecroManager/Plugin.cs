@@ -26,6 +26,9 @@ internal partial class Plugin : RiftPluginInternal {
         OnPluginLoaded += plugin => {
             LoadedPlugins[plugin.Metadata.GUID] = plugin;
         };
+        OnPluginUnloaded += plugin => {
+            LoadedPlugins.Remove(plugin.Metadata.GUID);
+        };
         Log.Info($"{MENU_NAME} is initializing...");
         RiftOfTheNecroManager.Config.VersionControl.AutomaticVersionControl.Bind(Config);
         LoadAllMods(); // fire and forget
