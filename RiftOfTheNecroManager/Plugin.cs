@@ -19,50 +19,64 @@ internal partial class Plugin : RiftPluginInternal {
     public const string VERSION = "1.1.1";
     public const string MENU_NAME = "Rift of the NecroManager";
     
-    private Dictionary<string, RiftPluginInternal> LoadedPlugins { get; } = [];
+    public static string CachePath => Path.Combine(PluginData.DataPath, "mod_info.json");
+    
+    private static Dictionary<string, RiftPluginInternal> LoadedPlugins { get; } = [];
+    
+    private static JsonServerResponse? ModInfo { get; set; } = null;
     
     private Plugin() {
+        Log.Info($"{MENU_NAME} is initializing...");
         LoadedPlugins[GUID] = this;
+        
         OnPluginLoaded += plugin => {
             LoadedPlugins[plugin.Metadata.GUID] = plugin;
+            
+            if(ModInfo is not null) {
+                // mod compatibility has already been queried
+                LoadModFromCache(plugin);
+            }
         };
+        
         OnPluginUnloaded += plugin => {
             LoadedPlugins.Remove(plugin.Metadata.GUID);
         };
-        Log.Info($"{MENU_NAME} is initializing...");
+        
         RiftOfTheNecroManager.Config.VersionControl.AutomaticVersionControl.Bind(Config);
         LoadAllMods(); // fire and forget
     }
     
     private async void LoadAllMods() {
-        var modInfo = await QueryModInfo();
-        foreach(var (guid, plugin) in LoadedPlugins) {
-            var info = modInfo.mods?.GetValueOrDefault(guid);
-            var version = info?.version ?? plugin.Metadata.Version;
-            var compatible = info?.compatible ?? false;
-            var updateAvailable = info?.updateAvailable ?? false;
-            
-            plugin.PerformVersionCheck(version, compatible, updateAvailable);
-            
-            foreach(var dep in plugin.Info.Dependencies) {
-                if(!dep.Flags.HasFlag(BepInDependency.DependencyFlags.HardDependency)) {
-                    continue;
-                }
-                
-                if(!LoadedPlugins.TryGetValue(dep.DependencyGUID, out var depPlugin)) {
-                    continue;
-                }
-                
-                if(depPlugin.Metadata.Deactivated) {
-                    plugin.DeactivateForDependency(dep.DependencyGUID);
-                    break;
-                }
-            }
-            
-            if(plugin.Metadata.Deactivated) {
+        ModInfo = await QueryModInfo(); // updates the cache
+        foreach(var (_, plugin) in LoadedPlugins) {
+            LoadModFromCache(plugin);
+        }
+    }
+    
+    private void LoadModFromCache(RiftPluginInternal plugin) {
+        var info = ModInfo?.mods?.GetValueOrDefault(plugin.Metadata.GUID);
+        var version = info?.version ?? plugin.Metadata.Version;
+        var compatible = info?.compatible ?? false;
+        var updateAvailable = info?.updateAvailable ?? false;
+        
+        plugin.PerformVersionCheck(version, compatible, updateAvailable);
+        
+        foreach(var dep in plugin.Info.Dependencies) {
+            if(!dep.Flags.HasFlag(BepInDependency.DependencyFlags.HardDependency)) {
                 continue;
             }
             
+            if(!LoadedPlugins.TryGetValue(dep.DependencyGUID, out var depPlugin)) {
+                continue;
+            }
+            
+            if(depPlugin.Metadata.Deactivated) {
+                plugin.DeactivateForDependency(dep.DependencyGUID);
+                break;
+            }
+        }
+        
+        if(!plugin.Metadata.Deactivated) {
             plugin.Initialize();
         }
     }
@@ -90,58 +104,69 @@ internal partial class Plugin : RiftPluginInternal {
             modsData[info.GUID] = info.Version;
         }
         
-        Log.Info($"Retrieving mod info from the {MENU_NAME} server...");
+        Log.Info($"Retrieving mod compatibility from the {MENU_NAME} server...");
         Util.SendJsonRequest("https://necrodancer.lalabuff.com/necromanager", data, request => {
             if(request.result == UnityWebRequest.Result.Success) {
                 try {
                     var info = request.downloadHandler.text;
                     var result = JsonConvert.DeserializeObject<JsonServerResponse>(info);
-                    CacheResponseInfo(info);
-                    Log.Info($"Successfully retrieved mod info from the {MENU_NAME} server.");
+                    Log.Info($"Successfully retrieved mod compatibility from the {MENU_NAME} server.");
+                    CacheResponseInfo(result);
                     tcs.TrySetResult(result);
                     return;
                 } catch(Exception e) {
-                    Log.Error($"Error occurred while retrieving info from the {MENU_NAME} server:");
+                    Log.Error($"Error occurred while retrieving mod compatibility from the {MENU_NAME} server:");
                     Log.Error(e);
                 }
             }
             
             // fallback behavior on failure or error
-            Log.Error($"Failed to retrieve mod info from the {MENU_NAME} server. (Status: {request.responseCode})");
+            Log.Error($"Failed to retrieve mod compatibility from the {MENU_NAME} server. (Status: {request.responseCode})");
             tcs.TrySetResult(LoadFallbackModInfo());
         });
         
         return await tcs.Task;
     }
     
-    private static void CacheResponseInfo(string json) {
-        var cachePath = Path.Combine(PluginData.DataPath, "mod_info.json");
+    private static void CacheResponseInfo(JsonServerResponse response) {
+        Log.Info("Updating mod compatibility cache...");
+        
+        var cache = LoadFallbackModInfo();
+        if(cache.version == response.version && cache.mods is not null) {
+            foreach(var x in response.mods ?? []) {
+                cache.mods[x.Key] = x.Value;
+            }
+        } else {
+            Log.Info("The mod compatibility cache is outdated or invalid and will be replaced.");
+            cache = response;
+        }
+        
         Directory.CreateDirectory(PluginData.DataPath);
         try {
-            File.WriteAllText(cachePath, json);
+            File.WriteAllText(CachePath, JsonConvert.SerializeObject(cache));
+            Log.Info("Successfully updated mod compatibility cache.");
         } catch(Exception e) {
-            Log.Warning("Failed to cache mod info:");
-            Log.Warning(e);
+            Log.Error("Failed to cache mod compatibility:");
+            Log.Error(e);
         }
     }
     
     private static JsonServerResponse LoadFallbackModInfo() {
-        Log.Info("Attempting to load mod info from cache...");
+        Log.Info("Attempting to load mod compatibility from cache...");
         
-        var cachePath = Path.Combine(PluginData.DataPath, "mod_info.json");
         try {
-            if(File.Exists(cachePath)) {
-                var json = File.ReadAllText(cachePath);
+            if(File.Exists(CachePath)) {
+                var json = File.ReadAllText(CachePath);
                 var result = JsonConvert.DeserializeObject<JsonServerResponse>(json);
-                Log.Info($"Successfully loaded mod info from cache.");
+                Log.Info($"Successfully loaded mod compatibility from cache.");
                 return result;
             }
         } catch(Exception e) {
-            Log.Warning("Failed to load mod info from cache:");
+            Log.Warning("Failed to load mod compatibility from cache:");
             Log.Warning(e);
         }
         
-        Log.Fatal("Mod info could not be loaded. All mods will be assumed to be incompatible.");
+        Log.Fatal("Mod compatibility could not be loaded. All mods will be assumed to be incompatible.");
         return new();
     }
 }
