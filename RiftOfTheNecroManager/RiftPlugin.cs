@@ -6,6 +6,7 @@ using HarmonyLib;
 using RiftOfTheNecroManager.BeatmapEvents;
 using RiftOfTheNecroManager.Patches;
 using Shared;
+using UnityEngine;
 
 namespace RiftOfTheNecroManager;
 
@@ -29,6 +30,7 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
         Log.RegisterAssembly(Assembly, Logger);
         OnPluginLoaded?.Invoke(this);
         Harmony = new(Metadata.GUID);
+        gameObject.hideFlags = HideFlags.HideAndDontSave;
     }
     
     private static void DisableBugSplat() {
