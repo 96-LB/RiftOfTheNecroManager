@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using Shared.Feedback;
 using TMPro;
 
@@ -19,6 +20,10 @@ public class FeedbackControllerState : State<FeedbackController, FeedbackControl
         Placeholder?.alpha = 1;
         Placeholder?.fontStyle &= ~FontStyles.Italic;
     }
+    
+    public void UpdateComment() {
+        Comment.text = "[MODDED]" + Environment.NewLine + Comment.text;
+    }
 }
 
 
@@ -29,5 +34,12 @@ public static class FeedbackControllerPatch {
     public static void Show(FeedbackController __instance) {
         var state = FeedbackControllerState.Of(__instance);
         state.UpdatePlaceholder();
+    }
+    
+    [HarmonyPatch(nameof(FeedbackController.HandleSubmitFeedback))]
+    [HarmonyPrefix]
+    public static void HandleSubmitFeedback(FeedbackController __instance) {
+        var state = FeedbackControllerState.Of(__instance);
+        state.UpdateComment();
     }
 }
