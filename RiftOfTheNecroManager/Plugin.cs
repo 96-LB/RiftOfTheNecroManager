@@ -32,13 +32,17 @@ internal partial class Plugin : RiftPluginInternal {
         OnPluginLoaded += plugin => {
             LoadedPlugins[plugin.Metadata.GUID] = plugin;
             
+            Log.Fatal($"Loaded {plugin}");
+            
             if(ModInfo is not null) {
                 // mod compatibility has already been queried
-                LoadModFromCache(plugin);
+                Util.ScheduleForNextFrame(this, () => LoadModFromCache(plugin));
             }
         };
         
         OnPluginUnloaded += plugin => {
+            Log.Fatal($"Unloaded {plugin}");
+            
             LoadedPlugins.Remove(plugin.Metadata.GUID);
         };
         
@@ -111,7 +115,7 @@ internal partial class Plugin : RiftPluginInternal {
                     var info = request.downloadHandler.text;
                     var result = JsonConvert.DeserializeObject<JsonServerResponse>(info);
                     Log.Info($"Successfully retrieved mod compatibility from the {MENU_NAME} server.");
-                    CacheResponseInfo(result);
+                    result = CacheResponseInfo(result);
                     tcs.TrySetResult(result);
                     return;
                 } catch(Exception e) {
@@ -128,7 +132,7 @@ internal partial class Plugin : RiftPluginInternal {
         return await tcs.Task;
     }
     
-    private static void CacheResponseInfo(JsonServerResponse response) {
+    private static JsonServerResponse CacheResponseInfo(JsonServerResponse response) {
         Log.Info("Updating mod compatibility cache...");
         
         var cache = LoadFallbackModInfo();
@@ -149,9 +153,12 @@ internal partial class Plugin : RiftPluginInternal {
             Log.Error("Failed to cache mod compatibility:");
             Log.Error(e);
         }
+        
+        return cache;
     }
     
     private static JsonServerResponse LoadFallbackModInfo() {
+        // TODO: this can be refactored in a way which merges it with CacheResponseInfo, since this has the same output as CacheResponseInfo(new())
         Log.Info("Attempting to load mod compatibility from cache...");
         
         try {
