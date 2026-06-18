@@ -32,8 +32,6 @@ internal partial class Plugin : RiftPluginInternal {
         OnPluginLoaded += plugin => {
             LoadedPlugins[plugin.Metadata.GUID] = plugin;
             
-            Log.Fatal($"Loaded {plugin}");
-            
             if(ModInfo is not null) {
                 // mod compatibility has already been queried
                 Util.ScheduleForNextFrame(this, () => LoadModFromCache(plugin));
@@ -41,8 +39,6 @@ internal partial class Plugin : RiftPluginInternal {
         };
         
         OnPluginUnloaded += plugin => {
-            Log.Fatal($"Unloaded {plugin}");
-            
             LoadedPlugins.Remove(plugin.Metadata.GUID);
         };
         

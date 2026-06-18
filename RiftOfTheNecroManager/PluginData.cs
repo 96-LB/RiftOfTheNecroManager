@@ -31,7 +31,9 @@ public static class PluginData {
     
     internal static void RegisterAssembly(Assembly assembly, RiftPluginInternal plugin) {
         if(PluginsByAssembly.TryGetValue(assembly, out var existingPlugin)) {
-            var message = $"Multiple plugins, or multiple copies of the same plugin, have been detected from the same plugin assembly as {existingPlugin.Metadata.InfoString}. Each assembly may only instantiate one plugin.";
+            var message = $"Multiple plugins, or multiple copies of the same plugin, have been detected from the same plugin assembly as {existingPlugin.Metadata.InfoString}.";
+            message += " ";
+            message += "Each assembly may only instantiate one plugin.";
             Log.Fatal(message);
             throw new InvalidOperationException(message);
         }
