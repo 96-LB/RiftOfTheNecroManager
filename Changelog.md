@@ -2,9 +2,10 @@
 
 ## 🧪 v1.1.1-beta - 17 June 2026
 - Added a warning on the Ctrl-B feedback reporter menu to discourage users from submitting bug reports while mods are active.
-- Added support for graceful cleanup of mods when the plugin option is unloaded.
+- Added support for graceful cleanup of mods when the plugin is unloaded.
 - Tweaked the mods display on the main menu.
 - Changed the "(Update available!)" message on the mods menu to be blue for greater visibility.
+- Improved mod compatibility cache to remember earlier queries.
 
 ## v1.1.0 - 5 May 2026
 ⚠️ **This release contains breaking changes.**
