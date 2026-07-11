@@ -36,7 +36,7 @@ internal partial class Plugin : RiftPluginInternal {
             
             if(ModInfo is not null) {
                 // mod compatibility has already been queried
-                Util.ScheduleForNextFrame(this, () => LoadModFromCache(plugin));
+                Util.ScheduleForNextFrame(() => LoadModFromCache(plugin));
             }
         };
         

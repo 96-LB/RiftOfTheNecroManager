@@ -71,7 +71,6 @@ public class RiftModsSettingsController : MonoBehaviour {
         Destroy(backMenu.gameObject);
         
         backButton.OnClick += controller.HandleCloseInput;
-        backButton.OnClick += controller.PlayCancelSfx;
         controller.BackButton = backButton;
         
         var descriptionLabel = Instantiate(template.TextButton, controller.OptionsObj.transform);
@@ -153,21 +152,18 @@ public class RiftModsSettingsController : MonoBehaviour {
         button.name = $"TextButton - Mod - {plugin.Metadata.Name}";
         
         button.OnSubmit += () => {
-            OptionsObj?.SetActive(false);
-            InputController?.Pipe(x => x.IsInputDisabled = true);
+            OptionsObj.SetActive(false);
+            InputController.IsInputDisabled = true;
             controller.gameObject.SetActive(true);
         };
         
         controller.OnClose += () => {
-            if(!enabled) {
+            if(!isActiveAndEnabled) {
                 return;
             }
             button.SetSubmitted(false);
-            this.ScheduleForNextFrame(() => {
-                controller.gameObject.SetActive(false);
-                InputController?.Pipe(x => x.IsInputDisabled = false);
-                OptionsObj?.SetActive(true);
-            });
+            InputController.IsInputDisabled = false;
+            OptionsObj.SetActive(true);
         };
         
         foreach(var label in button._textLabels) {
@@ -504,7 +500,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         }
         
         button.OnSubmit += async () => {
-            InputController?.IsInputDisabled = true;
+            InputController.IsInputDisabled = true;
             button._selectedIndicator.SetActive(false);
             
             var currentText = value.GetSerializedValue();
@@ -530,7 +526,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             }
             
             SetText(currentText, blinker: false);
-            InputController?.IsInputDisabled = false;
+            InputController.IsInputDisabled = false;
             button._selectedIndicator.SetActive(true);
             button.SetSubmitted(false);
             
@@ -554,7 +550,7 @@ public class RiftModsSettingsController : MonoBehaviour {
         if(!ModMenus.TryGetValue(plugin, out var menu)) {
             return false;
         }
-        OptionsGroup?.RemoveOption(menu.Button);
+        OptionsGroup.RemoveOption(menu.Button);
         Destroy(menu.Button.gameObject);
         Destroy(menu.Menu.gameObject);
         ModMenus.Remove(plugin);
@@ -590,7 +586,7 @@ public class RiftModsSettingsController : MonoBehaviour {
             }
         }
         
-        InputController?.OnCloseInput += HandleCloseInput;
+        InputController.OnCloseInput += HandleCloseInput;
     }
     
     public void Update() {
@@ -610,37 +606,40 @@ public class RiftModsSettingsController : MonoBehaviour {
     }
     
     public void OnDestroy() {
-        InputController?.OnCloseInput -= HandleCloseInput;
-        OptionsGroup?.RemoveAllOptions(true);
-        Destroy(OptionsGroup);
+        HandleCloseInput();
+        InputController.OnCloseInput -= HandleCloseInput;
+        OptionsGroup.RemoveAllOptions(true);
+        Destroy(OptionsGroup.gameObject);
         Destroy(OptionsObj);
         Destroy(InputController);
-        Destroy(BackButton);
-        Destroy(DescriptionLabel);
+        Destroy(BackButton.gameObject);
+        Destroy(DescriptionLabel.gameObject);
         
         foreach(var menu in ModMenus.Values) {
-            Destroy(menu.Menu);
+            Destroy(menu.Menu.gameObject);
         }
     }
     
     public void OnEnable() {
-        OptionsObj?.SetActive(true);
-        InputController?.Pipe(x => x.IsInputDisabled = false);
-        InputController?.SetSelectionIndex(0);
-        OptionsGroup?.SetSelectionIndex(0);
+        OptionsObj.SetActive(true);
+        InputController.IsInputDisabled = false;
+        InputController.SetSelectionIndex(0);
+        OptionsGroup.SetSelectionIndex(0);
     }
     
     public void OnDisable() {
-        OptionsObj?.SetActive(false);
-        InputController?.Pipe(x => x.IsInputDisabled = true);
+        PlayCancelSfx();
+        OptionsObj.SetActive(false);
+        InputController.IsInputDisabled = true;
     }
     
     public void HandleCloseInput() {
         OnClose?.Invoke();
-        InputController?.SetSelectionIndex(0);
+        gameObject.SetActive(false);
+        InputController.SetSelectionIndex(0);
     }
     
     public void PlayCancelSfx() {
-        Sfx.Play(Sfx.Cancel);
+        Sfx.Play(Sfx.Back);
     }
 }

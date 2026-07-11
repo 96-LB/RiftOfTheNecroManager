@@ -62,12 +62,12 @@ public static class Util {
         ForceSetText(obj.GetComponentInChildren<TMP_Text>(), text);
     }
     
-    public static void ScheduleForNextFrame(this MonoBehaviour obj, Action action) {
+    public static void ScheduleForNextFrame(Action action) {
         IEnumerator coroutine() {
             yield return null;
             action();
         }
-        obj.StartCoroutine(coroutine());
+        PluginData.Instance.StartCoroutine(coroutine());
     }
     
     public static Assembly GetCallingAssembly(params Type[] typesToExclude) {

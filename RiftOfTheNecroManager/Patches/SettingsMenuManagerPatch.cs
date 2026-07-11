@@ -41,11 +41,10 @@ public class SettingsMenuManagerState : State<SettingsMenuManager, SettingsMenuM
             controller.gameObject.SetActive(true);
         };
         controller.OnClose += () => {
-            if(!Instance.enabled) return;
-            controller.ScheduleForNextFrame(() => {
-                controller.gameObject.SetActive(false);
-                Instance._contentParent.SetActive(true);
-            });
+            if(!Instance.isActiveAndEnabled) {
+                return;
+            }
+            Instance._contentParent.SetActive(true);
         };
         
         foreach(var label in modsButton._textLabels) {
