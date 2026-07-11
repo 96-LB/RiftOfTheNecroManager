@@ -39,7 +39,6 @@ public class RiftModsSettingsController : MonoBehaviour {
     public OptionsScreenInputController InputController { get; private set; } = null!;
     public MenuButtonOption BackButton { get; private set; } = null!;
     public TextButtonOption DescriptionLabel { get; private set; } = null!;
-    public EventReference CancelSelectionSfx { get; private set; }
     public Dictionary<SelectableOption, string> Descriptions { get; } = [];
     public Dictionary<PluginInfo, ModMenu> ModMenus { get; } = [];
     
@@ -56,7 +55,6 @@ public class RiftModsSettingsController : MonoBehaviour {
         controller.OptionsObj = copy._mainOptionsParent;
         controller.OptionsGroup = copy._scrollableSelectableOptionGroup;
         controller.InputController = copy._optionsScreenInputController;
-        controller.CancelSelectionSfx = copy._cancelSelectionSfx;
         
         Destroy(copy);
         Destroy(controller.transform.Find("ColorBlindnessSubmenu").gameObject);
@@ -643,8 +641,6 @@ public class RiftModsSettingsController : MonoBehaviour {
     }
     
     public void PlayCancelSfx() {
-        if(!CancelSelectionSfx.IsNull) {
-            AudioManager.Instance.PlayAudioEvent(CancelSelectionSfx, 0f, shouldCache: true, 0u, 0f, shouldApplyLatency: false);
-        }
+        Sfx.Play(Sfx.Cancel);
     }
 }
