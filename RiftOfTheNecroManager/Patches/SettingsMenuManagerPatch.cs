@@ -7,25 +7,26 @@ using UnityEngine;
 namespace RiftOfTheNecroManager.Patches;
 
 
-[HarmonyPatch(typeof(SettingsMenuManager), nameof(SettingsMenuManager.Start))]
-internal static class SettingsMenuManagerPatch {
-    public static void Postfix(SettingsMenuManager __instance) {
+public class SettingsMenuManagerState : State<SettingsMenuManager, SettingsMenuManagerState> {
+    internal static RiftModsSettingsController? Controller { get; private set; }
+    
+    internal void CreateSettingsMenu() {
+        if(Controller) {
+            Log.Warning("Tried to create mod settings menu controller, but one already exists.");
+            return;
+        }
+        
         // we load a bunch of objects from the accessibility menu and store them as prefabs
         // we clone these to create our own menus
-        var template = __instance._riftAccessibilitySettingsController;
-        if(template) {
-            RiftModsSettingsController.LoadPrefabs(
-                template,
-                __instance._accessibilityButton,
+        var template = Instance._riftAccessibilitySettingsController;
+        var controller = RiftModsSettingsController.Create(new(template,
+                Instance._accessibilityButton,
                 template.GetComponentInChildren<ToggleOption>(),
                 template.GetComponentInChildren<CarouselOptionGroup>(),
                 template._backgroundDetailCarouselOptionPrefab,
-                __instance._riftAudioSettingsController._sliderPrefab,
+                Instance._riftAudioSettingsController._sliderPrefab,
                 template._cancelButton
-            );
-        }
-        // create the mods menu controller and populate it
-        var controller = RiftModsSettingsController.Create();
+        ));
         if(controller == null) {
             Log.Fatal("Failed to create mod settings menu controller.");
             return;
@@ -33,17 +34,17 @@ internal static class SettingsMenuManagerPatch {
         controller.AddAllModMenus();
         
         // add a button to the base settings menu
-        var modsButton = Object.Instantiate(__instance._accessibilityButton, __instance._accessibilityButton.transform.parent);
+        var modsButton = Object.Instantiate(Instance._accessibilityButton, Instance._accessibilityButton.transform.parent);
         modsButton.name = "TextButton - Mods";
         modsButton.OnSubmit += () => {
-            __instance._contentParent.SetActive(false);
+            Instance._contentParent.SetActive(false);
             controller.gameObject.SetActive(true);
         };
         controller.OnClose += () => {
-            if(!__instance.enabled) return;
+            if(!Instance.enabled) return;
             controller.ScheduleForNextFrame(() => {
                 controller.gameObject.SetActive(false);
-                __instance._contentParent.SetActive(true);
+                Instance._contentParent.SetActive(true);
             });
         };
         
@@ -57,12 +58,23 @@ internal static class SettingsMenuManagerPatch {
         modsButton._unselectedTextColor = color.RGBMultiplied(0.5f);
         
         // add the button to the input controller and layout group as the penultimate option (before BACK)
-        __instance._inputController.TryAddOption(modsButton, __instance._inputController.LastOptionIndex);
+        Instance._inputController.TryAddOption(modsButton, Instance._inputController.LastOptionIndex);
         var index = modsButton.transform.GetSiblingIndex();
         if(index > 0) {
             modsButton.transform.SetSiblingIndex(index - 1);
         }
         
+        Controller = controller;
         Log.Info("Successfully created mod settings menu.");
+    }
+}
+
+[HarmonyPatch(typeof(SettingsMenuManager))]
+internal static class SettingsMenuManagerPatch {
+    [HarmonyPatch(nameof(SettingsMenuManager.Start))]
+    [HarmonyPostfix]
+    public static void Start(SettingsMenuManager __instance) {
+        var state = SettingsMenuManagerState.Of(__instance);
+        state.CreateSettingsMenu();
     }
 }

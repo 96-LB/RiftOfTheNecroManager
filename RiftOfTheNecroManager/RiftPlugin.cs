@@ -96,6 +96,7 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
             Harmony.PatchAll(Assembly);
             Setting.RegisterAssembly(Assembly, Config);
             CustomEvent.RegisterAssembly(Assembly, Metadata.GetCustomEventsName());
+            SettingsMenuManagerState.Controller?.AddModMenu(Info);
             OnInit();
         } catch(Exception e) {
             DeactivateForError(e);

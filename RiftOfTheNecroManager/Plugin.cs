@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
 using Newtonsoft.Json;
+using RiftOfTheNecroManager.Patches;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -41,6 +42,7 @@ internal partial class Plugin : RiftPluginInternal {
         
         OnPluginUnloaded += plugin => {
             LoadedPlugins.Remove(plugin.Metadata.GUID);
+            SettingsMenuManagerState.Controller?.DeleteModMenu(plugin.Info);
         };
         
         RiftOfTheNecroManager.Config.VersionControl.AutomaticVersionControl.Bind(Config);
