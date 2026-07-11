@@ -31,6 +31,7 @@ internal partial class Plugin : RiftPluginInternal {
         
         OnPluginLoaded += plugin => {
             LoadedPlugins[plugin.Metadata.GUID] = plugin;
+            Log.Info($"Found plugin {plugin.Metadata.GUID}.");
             
             if(ModInfo is not null) {
                 // mod compatibility has already been queried
@@ -82,7 +83,16 @@ internal partial class Plugin : RiftPluginInternal {
     }
     
     private static async Task<JsonServerResponse> QueryModInfo() {
-        await GlobalTimer.NextTick(); // wait for other plugins to load
+        // wait for other plugins to load
+        var pluginCount = -1;
+        for(int i = 0; i < 10; i++) {
+            if(Chainloader.PluginInfos.Values.Count == pluginCount) {
+                break;
+            }
+            await GlobalTimer.NextTick();
+            await GlobalTimer.NextTick();
+            pluginCount = Chainloader.PluginInfos.Values.Count;
+        }
         
         var versionControl = RiftOfTheNecroManager.Config.VersionControl.AutomaticVersionControl;
         if(versionControl != VersionControlOption.Automatic) {

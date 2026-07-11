@@ -18,7 +18,7 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
     
     
     private static bool IsBugSplatDisabled { get; set; } = false;
-    private static Harmony BugsplatPatcher { get; } = new("BUGSPLAT"); 
+    private static Harmony BugsplatPatcher { get; } = new("BUGSPLAT");
     private protected static event Action<RiftPluginInternal>? OnPluginLoaded;
     private protected static event Action<RiftPluginInternal>? OnPluginUnloaded;
     
@@ -87,10 +87,11 @@ public abstract class RiftPluginInternal : BaseUnityPlugin {
     
     internal void Initialize() {
         if(PluginData.GetPlugin(Assembly) != this) {
-            Log.Error("Tried to initialize plugin that is not registered. If this happens, something is very wrong.");
+            Log.Error($"Tried to initialize plugin that is not registered. If this happens, something is very wrong.");
             return;
         }
         
+        Log.Info($"Initializing plugin {Metadata.InfoString}...");
         try {
             Harmony.PatchAll(Assembly);
             Setting.RegisterAssembly(Assembly, Config);

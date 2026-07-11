@@ -11,7 +11,7 @@ public class RiftPluginInfo : State<PluginInfo, RiftPluginInfo> {
     public string InfoString => $"{Name} v{Version} ({GUID})";
     public bool IsBeta => Attribute.IsBeta;
     
-    public NecroManagerInfoAttribute Attribute => attribute ??= NecroManagerInfoAttribute.GetAttribute(Instance.Instance.GetType());
+    public NecroManagerInfoAttribute Attribute => (attribute ??= Instance.Instance?.GetType().Pipe(NecroManagerInfoAttribute.GetAttribute)) ?? new();
     private NecroManagerInfoAttribute? attribute;
     
     public bool IsNecroManagerPlugin => Instance.Instance is RiftPluginInternal;
