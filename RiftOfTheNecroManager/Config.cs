@@ -8,7 +8,7 @@ public enum VersionControlOption {
 }
 
 
-public static class Config {
+internal static class Config {
     public static class VersionControl {
         const string GROUP = "Version Control";
         
