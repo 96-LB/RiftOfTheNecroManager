@@ -1,5 +1,9 @@
 ﻿# Changelog
 
+## 🧪 v1.2.0-beta - 8 October 2026
+⚠️ **WARNING:** This release is not compatible with the latest stable version of Rift of the NecroDancer!
+- Updated code to be compatible with the choreomaps beta on the `publicbetatesting` branch.
+
 ## v1.1.1 - 11 July 2026
 - Added a warning on the Ctrl-B feedback reporter menu to discourage users from submitting bug reports while mods are active.
 - Added support for graceful cleanup of mods when the plugin is unloaded, and support for loading mod menus late for compatible mods. This is useful when using a tool such as ScriptEngine or AutoReload to hotload plugins.
