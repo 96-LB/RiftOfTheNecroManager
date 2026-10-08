@@ -1,7 +1,9 @@
 ﻿using HarmonyLib;
 using RhythmRift;
+using Shared.RhythmEngine;
 using Shared.Utilities;
 using System.Collections;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -9,11 +11,11 @@ namespace RiftOfTheNecroManager.Patches;
 
 
 public class StageState : State<RRStageController, StageState> {
-    public BeatmapState Beatmap => BeatmapState.Of(Instance.BeatmapPlayer);
+    public RRBeatmapPlayerState? Beatmap => (Instance.TimelineMapPlayer as RRBeatmapPlayer)?.Pipe(RRBeatmapPlayerState.Of);
     
     public float StartBeat => Mathf.Max(0,
         Instance._isPracticeMode
-        ? Instance._practiceModeStartBeatNumber - Instance._practiceModeTotalBeatsSkippedBeforeStartBeatmap - Instance._microRiftMusicFadeInDurationInBeats
+        ? Instance._practiceModeStartBeatNumber - Instance._practiceModeTotalBeatsSkippedBeforeStartTimelineMap - Instance._microRiftMusicFadeInDurationInBeats
         : 0
     );
     
@@ -22,8 +24,10 @@ public class StageState : State<RRStageController, StageState> {
         : float.MaxValue;
     
     public async Task Preload() {
-        Beatmap.Stage = this;
-        await Beatmap.Preload(Instance._beatmaps);
+        if(Beatmap is not null) {
+            Beatmap.Stage = this;
+            await Beatmap.Preload(Instance._timelineMaps.OfType<Beatmap>());
+        }
     }
 }
 

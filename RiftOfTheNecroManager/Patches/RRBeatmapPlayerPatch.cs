@@ -9,7 +9,7 @@ using Shared.RhythmEngine;
 namespace RiftOfTheNecroManager.Patches;
 
 
-public class BeatmapState : State<RRBeatmapPlayer, BeatmapState> {
+public class RRBeatmapPlayerState : State<RRBeatmapPlayer, RRBeatmapPlayerState> {
     // we pair the beatmap event and its data dict to avoid hashing issues on the beatmap struct
     private record Event(BeatmapEvent BeatmapEvent, Dictionary<string, List<string>> Data);
     
@@ -59,11 +59,11 @@ public class BeatmapState : State<RRBeatmapPlayer, BeatmapState> {
 
 
 [HarmonyPatch(typeof(RRBeatmapPlayer))]
-public static class BeatmapPatch {
+public static class RRBeatmapPlayerPatch {
     [HarmonyPatch(nameof(RRBeatmapPlayer.ProcessBeatEvent))]
     [HarmonyPostfix]
     public static void ProcessBeatEvent(RRBeatmapPlayer __instance, BeatmapEvent beatEvent) {
-        var state = BeatmapState.Of(__instance);
+        var state = RRBeatmapPlayerState.Of(__instance);
         state.ProcessBeatEvent(beatEvent);
     }
 }
