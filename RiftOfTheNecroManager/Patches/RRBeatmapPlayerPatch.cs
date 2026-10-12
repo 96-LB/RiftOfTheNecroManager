@@ -14,7 +14,7 @@ public class RRBeatmapPlayerState : State<RRBeatmapPlayer, RRBeatmapPlayerState>
     private record Event(BeatmapEvent BeatmapEvent, Dictionary<string, List<string>> Data);
     
     public StageState? Stage { get; internal set; }
-    private CustomEvent[] CustomEvents { get; set; } = [];
+    public CustomEvent[] CustomEvents { get; private set; } = [];
     private Dictionary<Event, CustomEvent> UnprocessedEvents { get; } = [];
     
     public async Task Preload(IEnumerable<Beatmap> beatmaps) {
